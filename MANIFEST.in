@@ -1,0 +1,6 @@
+include LICENSE
+include README.md
+recursive-include accounts/templates *
+recursive-include accounts/static *
+recursive-include static *
+recursive-include templates *

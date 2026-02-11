@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}商品管理 - AccountBooks{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <div>
+        <h1>商品管理</h1>
+        <p>管理系统中的所有商品及其定价信息。</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('{% url 'goods_add' %}')">
+        + 新增商品
+    </button>
+</header>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>商品名称</th>
+                <th>单价（元）</th>
+                <th>创建时间</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for goods in goods_list %}
+            <tr>
+                <td style="color: var(--text-dim);">#{{ goods.id }}</td>
+                <td style="font-weight: 500;">{{ goods.goods }}</td>
+                <td style="color: var(--accent-green); font-weight: 600;">¥ {{ goods.goods_price }}</td>
+                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ goods.created|date:"Y-m-d H:i" }}</td>
+                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ goods.updated|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <div class="action-group">
+                        <button class="action-link action-link-edit"
+                            onclick="openModal('{% url 'goods_edit' goods.pk %}')">编辑</button>
+                        <button class="action-link action-link-delete"
+                            onclick="confirmDelete('{% url 'goods_delete' goods.pk %}', '{{ goods.goods }} (¥{{ goods.goods_price }})')">删除</button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-state">
+                    <p>暂无商品信息</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">点击右上角「新增商品」开始添加</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+        {% endif %}
+        <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

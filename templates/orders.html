@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}交易记录 - AccountBooks{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <div>
+        <h1>交易流水</h1>
+        <p>查看并管理所有的商品交易记录。</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('{% url 'order_add' %}')">
+        + 新增记录
+    </button>
+</header>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 60px;">ID</th>
+                <th style="width: 100px;">购买人</th>
+                <th>商品明细</th>
+                <th style="width: 100px;">应收总价</th>
+                <th style="width: 100px;">实收总价</th>
+                <th style="width: 80px;">状态</th>
+                <th style="width: 140px;">交易时间</th>
+                <th style="width: 100px;">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td style="color: var(--text-dim);">#{{ order.id }}</td>
+                <td style="font-weight: 500;">{{ order.account.name }}</td>
+                <td>
+                    <div class="text-truncate-wrapper">
+                        <!-- 悬停显示的详细 HTML 内容 -->
+                        <div class="tooltip-content">
+                            {% for item in order.items.all %}
+                            <div style="white-space: nowrap;">
+                                <span style="color: var(--text-main);">{{ item.goods.goods }}</span>
+                                <span style="color: var(--text-dim);">× {{ item.quantity }}</span>
+                                <span style="color: var(--accent-green); font-weight: 600;">
+                                    = ¥{{ item.subtotal}}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- 默认显示的精简内容 -->
+                        <div class="text-truncate-container">
+                            {% for item in order.items.all %}
+                            <div style="font-size: 0.8125rem; color: var(--text-dim); line-height: 1.6;">
+                                <span style="color: var(--text-main);">{{ item.goods.goods }}</span>
+                                × {{ item.quantity }}
+                            </div>
+                            {% empty %}
+                            <span style="color: var(--text-dim); font-size: 0.8125rem;">无商品</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </td>
+                <td style="font-weight: 600;">¥ {{ order.total_price }}</td>
+                <td style="color: var(--accent-green);">¥ {{ order.total_price_real }}</td>
+                <td>
+                    <span class="status-badge status-{{ order.status }}">
+                        {{ order.get_status_display }}
+                    </span>
+                </td>
+                <td style="color: var(--text-dim); font-size: 0.875rem;">
+                    {{ order.buy_time|date:"Y-m-d H:i" }}
+                </td>
+                <td>
+                    <div class="action-group">
+                        <button class="action-link action-link-edit"
+                            onclick="openModal('{% url 'order_edit' order.pk %}')">编辑</button>
+                        <button class="action-link action-link-delete"
+                            onclick="confirmDelete('{% url 'order_delete' order.pk %}', '订单 #{{ order.id }} ({{ order.account.name }})')">删除</button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="empty-state">
+                    <p>暂无交易记录</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">点击右上角「新增记录」开始添加</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+        {% endif %}
+        <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

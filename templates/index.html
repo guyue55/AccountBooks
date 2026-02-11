@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}账簿管理系统 - Dashboard{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <div>
+        <h1>数据总览</h1>
+        <p>欢迎回来，这里是您的实时账务数据汇总。</p>
+    </div>
+</header>
+
+<!-- 统计卡片 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-label">待收总额</span>
+        <div class="stat-value">¥ {{ total_wait|default:"0.00" }}</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">已收总额</span>
+        <div class="stat-value" style="color: var(--accent-green)">¥ {{ total_over|default:"0.00" }}</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">赖账损失</span>
+        <div class="stat-value" style="color: var(--accent-red)">¥ {{ total_default|default:"0.00" }}</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">订单总数</span>
+        <div class="stat-value">{{ order_count|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">收款率</span>
+        <div class="stat-value" style="color: var(--primary-color)">{{ collection_rate|default:"0" }}%</div>
+    </div>
+</div>
+
+<!-- 债务人明细表 -->
+<div class="table-container">
+    <h3>债务人详情</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>债务人</th>
+                <th>待还金额</th>
+                <th>已还</th>
+                <th>赖账</th>
+                <th>最后更新</th>
+                <th>状态</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+            <tr>
+                <td style="font-weight: 500;">{{ book.account_info.name }}</td>
+                <td>¥ {{ book.money_wait }}</td>
+                <td style="color: var(--accent-green);">¥ {{ book.money_over }}</td>
+                <td style="color: var(--accent-red);">¥ {{ book.money_default }}</td>
+                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ book.updated|date:"Y-m-d H:i" }}</td>
+                <td>
+                    {% if book.money_wait > 0 %}
+                    <span class="status-badge status-wait">催收中</span>
+                    {% elif book.money_default > 0 %}
+                    <span class="status-badge status-default">已逾期</span>
+                    {% else %}
+                    <span class="status-badge status-ok">已结清</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="empty-state">暂无记录</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

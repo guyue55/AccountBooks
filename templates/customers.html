@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}购买人管理 - AccountBooks{% endblock %}
+
+{% block content %}
+<header class="page-header">
+    <div>
+        <h1>购买人管理</h1>
+        <p>管理系统中的所有购买人（债务人）信息。</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('{% url 'customer_add' %}')">
+        + 新增购买人
+    </button>
+</header>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>真实姓名</th>
+                <th>年龄</th>
+                <th>地址</th>
+                <th>备注</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for customer in customers %}
+            <tr>
+                <td style="color: var(--text-dim);">#{{ customer.id }}</td>
+                <td style="font-weight: 500;">{{ customer.name }}</td>
+                <td>{{ customer.real_name|default:"-" }}</td>
+                <td>{{ customer.age|default:"-" }}</td>
+                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.location }}</td>
+                <td
+                    style="color: var(--text-dim); font-size: 0.875rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {{ customer.remarks|default:"-" }}
+                </td>
+                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.updated|date:"Y-m-d H:i" }}</td>
+                <td>
+                    <div class="action-group">
+                        <button class="action-link action-link-edit"
+                            onclick="openModal('{% url 'customer_edit' customer.pk %}')">编辑</button>
+                        <button class="action-link action-link-delete"
+                            onclick="confirmDelete('{% url 'customer_delete' customer.pk %}', '{{ customer.name }} ({{ customer.real_name|default:"
+                            未设置" }})')">删除</button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="empty-state">
+                    <p>暂无购买人信息</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">点击右上角「新增购买人」开始添加</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">&laquo;</a>
+        {% endif %}
+        <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
