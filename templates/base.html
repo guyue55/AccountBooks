@@ -295,8 +295,7 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            table-layout: fixed;
-            /* 强制布局以控制列宽 */
+            /* 取消 fixed 布局以实现自适应宽度 */
         }
 
         td {
@@ -357,6 +356,14 @@
             font-size: 0.95rem;
             vertical-align: middle;
             /* 确保内容在单元格内垂直居中 */
+        }
+
+        .col-id {
+            width: 40px;
+            /* 约 2 个字母长度 */
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            text-align: center;
         }
 
         tr:last-child td {

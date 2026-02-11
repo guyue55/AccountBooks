@@ -17,7 +17,7 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 60px;">ID</th>
+                <th class="col-id">ID</th>
                 <th style="width: 100px;">购买人</th>
                 <th>商品明细</th>
                 <th style="width: 100px;">应收总价</th>
@@ -30,7 +30,7 @@
         <tbody>
             {% for order in orders %}
             <tr>
-                <td style="color: var(--text-dim);">#{{ order.id }}</td>
+                <td class="col-id" style="color: var(--text-dim);">{{ order.id }}</td>
                 <td style="font-weight: 500;">{{ order.account.name }}</td>
                 <td>
                     <div class="text-truncate-wrapper">
@@ -74,7 +74,7 @@
                         <button class="action-link action-link-edit"
                             onclick="openModal('{% url 'order_edit' order.pk %}')">编辑</button>
                         <button class="action-link action-link-delete"
-                            onclick="confirmDelete('{% url 'order_delete' order.pk %}', '订单 #{{ order.id }} ({{ order.account.name }})')">删除</button>
+                            onclick="confirmDelete('{% url 'order_delete' order.pk %}', '订单 {{ order.id }} ({{ order.account.name }})')">删除</button>
                     </div>
                 </td>
             </tr>

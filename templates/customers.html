@@ -17,7 +17,7 @@
     <table>
         <thead>
             <tr>
-                <th>ID</th>
+                <th class="col-id">ID</th>
                 <th>名称</th>
                 <th>真实姓名</th>
                 <th>年龄</th>
@@ -30,7 +30,7 @@
         <tbody>
             {% for customer in customers %}
             <tr>
-                <td style="color: var(--text-dim);">#{{ customer.id }}</td>
+                <td class="col-id" style="color: var(--text-dim);">{{ customer.id }}</td>
                 <td style="font-weight: 500;">{{ customer.name }}</td>
                 <td>{{ customer.real_name|default:"-" }}</td>
                 <td>{{ customer.age|default:"-" }}</td>
@@ -45,8 +45,7 @@
                         <button class="action-link action-link-edit"
                             onclick="openModal('{% url 'customer_edit' customer.pk %}')">编辑</button>
                         <button class="action-link action-link-delete"
-                            onclick="confirmDelete('{% url 'customer_delete' customer.pk %}', '{{ customer.name }} ({{ customer.real_name|default:"
-                            未设置" }})')">删除</button>
+                            onclick="confirmDelete('{% url 'customer_delete' customer.pk %}', '{{ customer.name }} ({{ customer.real_name|default:'未设置' }})')">删除</button>
                     </div>
                 </td>
             </tr>

@@ -17,7 +17,7 @@
     <table>
         <thead>
             <tr>
-                <th>ID</th>
+                <th class="col-id">ID</th>
                 <th>商品名称</th>
                 <th>单价（元）</th>
                 <th>创建时间</th>
@@ -28,7 +28,7 @@
         <tbody>
             {% for goods in goods_list %}
             <tr>
-                <td style="color: var(--text-dim);">#{{ goods.id }}</td>
+                <td class="col-id" style="color: var(--text-dim);">{{ goods.id }}</td>
                 <td style="font-weight: 500;">{{ goods.goods }}</td>
                 <td style="color: var(--accent-green); font-weight: 600;">¥ {{ goods.goods_price }}</td>
                 <td style="color: var(--text-dim); font-size: 0.875rem;">{{ goods.created|date:"Y-m-d H:i" }}</td>
