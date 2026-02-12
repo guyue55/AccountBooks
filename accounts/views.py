@@ -224,12 +224,42 @@ class OrdersView(LoginRequiredMixin, ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        """优化查询：预加载购买人和行项关联以减少 N+1 查询。"""
-        return Order.objects.select_related('account').prefetch_related('items__goods')
+        """优化查询并支持多维筛选。"""
+        from django.db.models import Q
+        
+        qs = Order.objects.select_related('account').prefetch_related('items__goods').order_by('-buy_time')
+        
+        # 1. 搜索词筛选 (购买人姓名或商品名)
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(account__name__icontains=q) | 
+                Q(items__goods__goods__icontains=q)
+            ).distinct()
+            
+        # 2. 状态筛选
+        status = self.request.GET.get('status')
+        if status:
+            qs = qs.filter(status=status)
+            
+        # 3. 日期范围筛选
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        if start_date:
+            qs = qs.filter(buy_time__date__gte=start_date)
+        if end_date:
+            qs = qs.filter(buy_time__date__lte=end_date)
+            
+        return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_nav'] = 'orders'
+        # 保持分页时的筛选参数
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        context['query_string'] = query_params.urlencode()
         return context
 
 

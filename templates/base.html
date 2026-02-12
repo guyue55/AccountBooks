@@ -252,7 +252,234 @@
             border: 1px solid var(--border-color);
             overflow: hidden;
             backdrop-filter: blur(10px);
-            margin-top: 2rem;
+            margin-top: 1rem;
+
+            /* 响应式表格核心：允许容器横向滚动 */
+            width: 100%;
+            overflow-x: auto;
+            /* 移动端顺滑滚动 */
+        }
+
+        /* 优化滚动条体验：默认隐藏，悬浮显示 */
+        .table-container::-webkit-scrollbar,
+        .filter-toolbar::-webkit-scrollbar {
+            height: 6px;
+            /* 横向滚动条高度 */
+            width: 6px;
+        }
+
+        .table-container::-webkit-scrollbar-track,
+        .filter-toolbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-container::-webkit-scrollbar-thumb,
+        .filter-toolbar::-webkit-scrollbar-thumb {
+            background-color: transparent;
+            /* 默认透明 */
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        /* 鼠标悬浮容器时显示滚动条 */
+        .table-container:hover::-webkit-scrollbar-thumb,
+        .filter-toolbar:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 鼠标悬浮在滚动条上时加深 */
+        .table-container::-webkit-scrollbar-thumb:hover,
+        .filter-toolbar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 表格本身保持最小宽度，强制触发滚动 */
+        .table-container table {
+            min-width: 800px;
+            /* 保证在大屏紧凑布局下也不会崩坏 */
+            width: 100%;
+        }
+
+        /* ===== 极简单行筛选工具栏 ===== */
+        .filter-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            /* 空间不足时自动换行，不做硬性滑动 */
+            row-gap: 0.8rem;
+            /* 换行时的行间距 */
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            transition: all var(--transition-speed);
+            backdrop-filter: blur(8px);
+        }
+
+        .filter-item:focus-within {
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .filter-item i {
+            padding-left: 0.75rem;
+            color: var(--text-dim);
+            font-size: 0.875rem;
+        }
+
+        .filter-item-input {
+            background: none;
+            border: none;
+            padding: 0.625rem 0.75rem;
+            color: var(--text-main);
+            font-size: 0.8125rem;
+            outline: none;
+            width: 100%;
+        }
+
+        /* 搜索框宽度占比最高 */
+        /* 搜索框固定宽度，避免过度拉伸 */
+        .filter-item-search {
+            width: 240px;
+            flex-shrink: 0;
+            margin-right: 0.5rem;
+        }
+
+        /* 日期选择器组合 */
+        .filter-date-group {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 0 0.5rem;
+            gap: 2px;
+        }
+
+        .filter-date-group i {
+            color: var(--text-dim);
+            font-size: 0.875rem;
+            padding-right: 4px;
+            opacity: 0.7;
+        }
+
+        .filter-date-group .filter-item-input {
+            width: 105px;
+            padding: 0.625rem 0;
+            text-align: center;
+            background: transparent;
+            font-family: inherit;
+        }
+
+        /* 修复 placeholder 居中问题 */
+        .filter-date-group .filter-item-input::placeholder {
+            text-align: center;
+        }
+
+        .filter-date-separator {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+            opacity: 0.5;
+            font-weight: 300;
+        }
+
+        .btn-filter-submit {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            height: 36px;
+            width: 36px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-filter-submit:hover {
+            background: var(--primary-hover);
+            transform: scale(1.05);
+        }
+
+        .btn-filter-reset-new {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+            border: 1px solid var(--border-color);
+            height: 36px;
+            width: 36px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-filter-reset-new:hover {
+            background: var(--accent-red);
+            color: white;
+            border-color: var(--accent-red);
+        }
+
+        /* ===== 自定义 Tooltip (零延迟) ===== */
+        [data-tooltip] {
+            position: relative;
+        }
+
+        [data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            /* 小巧精致 */
+            white-space: nowrap;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.15s ease-out;
+            /* 极速淡入 */
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* 隐藏原生的日期选择器图标，因为我们现在全框点击触发 */
+        /* 隐藏原生的日期选择器图标，因为我们现在全框点击触发 */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            display: none;
+            -webkit-appearance: none;
+        }
+
+        /* 状态列强制不换行 */
+        .status-col {
+            white-space: nowrap;
         }
 
         /* ===== Dashboard 统计卡片 ===== */
@@ -376,21 +603,14 @@
 
         .status-badge {
             display: inline-flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 0.6rem 0.4rem;
-            border-radius: 0.6rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 0.5rem;
             font-size: 0.75rem;
-            font-weight: 700;
-            line-height: 1.1;
-            min-width: 28px;
-            text-align: center;
-            writing-mode: vertical-rl;
-            /* 开启竖向文本模式 */
-            text-orientation: upright;
-            /* 保持字符方向正常（不旋转） */
-            letter-spacing: 0.1em;
+            font-weight: 600;
+            line-height: 1;
+            white-space: nowrap;
         }
 
         .status-ok {
