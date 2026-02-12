@@ -20,8 +20,8 @@
                 <th class="col-id">ID</th>
                 <th style="width: 100px;">购买人</th>
                 <th>商品明细</th>
-                <th style="width: 100px;">应收总价</th>
-                <th style="width: 100px;">实收总价</th>
+                <th>应收总价</th>
+                <th>实收总价</th>
                 <th style="width: 80px;">状态</th>
                 <th style="width: 140px;">交易时间</th>
                 <th style="width: 100px;">操作</th>
@@ -54,13 +54,13 @@
                                 × {{ item.quantity }}
                             </div>
                             {% empty %}
-                            <span style="color: var(--text-dim); font-size: 0.8125rem;">无商品</span>
+                            <span style="color: var(--text-dim); font-size: 0.8125rem;">-</span>
                             {% endfor %}
                         </div>
                     </div>
                 </td>
-                <td style="font-weight: 600;">¥ {{ order.total_price }}</td>
-                <td style="color: var(--accent-green);">¥ {{ order.total_price_real }}</td>
+                <td style="font-weight: 800;">¥{{ order.total_price }}</td>
+                <td style="color: var(--accent-green);">¥{{ order.total_price_real }}</td>
                 <td>
                     <span class="status-badge status-{{ order.status }}">
                         {{ order.get_status_display }}
