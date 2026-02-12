@@ -5,7 +5,7 @@
 - Dashboard：首页总览
 - 交易记录：CRUD 操作
 - 商品管理：CRUD 操作
-- 购买人管理：CRUD 操作
+- 顾客管理：CRUD 操作
 - API：价格计算接口
 - 管理后台：Django Admin
 """
@@ -41,7 +41,7 @@ urlpatterns = [
     path('goods/<int:pk>/edit', views.GoodsUpdateView.as_view(), name='goods_edit'),
     path('goods/<int:pk>/delete', views.GoodsDeleteView.as_view(), name='goods_delete'),
 
-    # ----- 购买人管理 -----
+    # ----- 顾客管理 -----
     path('customers', views.CustomerListView.as_view(), name='customer_list'),
     path('customers/add', views.CustomerCreateView.as_view(), name='customer_add'),
     path('customers/<int:pk>/edit', views.CustomerUpdateView.as_view(), name='customer_edit'),

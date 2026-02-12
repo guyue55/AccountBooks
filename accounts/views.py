@@ -7,7 +7,7 @@ AccountBooks 视图模块。
 3. Dashboard 视图
 4. 交易记录 CRUD
 5. 商品管理 CRUD
-6. 购买人管理 CRUD
+6. 顾客管理 CRUD
 7. API 视图 (价格计算)
 
 所有 CRUD 视图均继承 AjaxFormMixin，支持：
@@ -229,7 +229,7 @@ class OrdersView(LoginRequiredMixin, ListView):
         
         qs = Order.objects.select_related('account').prefetch_related('items__goods').order_by('-buy_time')
         
-        # 1. 搜索词筛选 (购买人姓名或商品名)
+        # 1. 搜索词筛选 (顾客姓名或商品名)
         q = self.request.GET.get('q')
         if q:
             qs = qs.filter(
@@ -404,9 +404,21 @@ class GoodsListView(LoginRequiredMixin, ListView):
     login_url = "/login"
     paginate_by = 15
 
+    def get_queryset(self):
+        qs = super().get_queryset().order_by('-updated')
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(goods__icontains=q)
+        return qs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_nav'] = 'goods'
+        # 保持分页时的筛选参数
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        context['query_string'] = query_params.urlencode()
         return context
 
 
@@ -469,58 +481,76 @@ class GoodsDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # ===========================================================================
-# 购买人管理 CRUD
+# 顾客管理 CRUD
 # ===========================================================================
 
 class CustomerListView(LoginRequiredMixin, ListView):
-    """购买人列表视图。"""
+    """顾客列表视图。"""
     model = AccountInfo
     template_name = "customers.html"
     context_object_name = "customers"
     login_url = "/login"
     paginate_by = 15
 
+    def get_queryset(self):
+        from django.db.models import Q
+        qs = super().get_queryset().order_by('-updated')
+        q = self.request.GET.get('q')
+        if q:
+            qs = qs.filter(
+                Q(name__icontains=q) |
+                Q(real_name__icontains=q) |
+                Q(location__icontains=q) |
+                Q(remarks__icontains=q)
+            )
+        return qs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_nav'] = 'customers'
+        # 保持分页时的筛选参数
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        context['query_string'] = query_params.urlencode()
         return context
 
 
 class CustomerCreateView(LoginRequiredMixin, AjaxFormMixin, CreateView):
-    """新增购买人视图。"""
+    """新增顾客视图。"""
     model = AccountInfo
     form_class = AccountInfoForm
     template_name = "customers.html"
     partial_template_name = "partials/customer_form.html"
     success_url = reverse_lazy('customer_list')
-    success_message = '购买人创建成功'
+    success_message = '顾客创建成功'
     login_url = "/login"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = '新增购买人'
+        context['title'] = '新增顾客'
         return context
 
 
 class CustomerUpdateView(LoginRequiredMixin, AjaxFormMixin, UpdateView):
-    """编辑购买人视图。"""
+    """编辑顾客视图。"""
     model = AccountInfo
     form_class = AccountInfoForm
     template_name = "customers.html"
     partial_template_name = "partials/customer_form.html"
     success_url = reverse_lazy('customer_list')
-    success_message = '购买人信息更新成功'
+    success_message = '顾客信息更新成功'
     login_url = "/login"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = '编辑购买人'
+        context['title'] = '编辑顾客'
         context['is_edit'] = True
         return context
 
 
 class CustomerDeleteView(LoginRequiredMixin, DeleteView):
-    """删除购买人视图。"""
+    """删除顾客视图。"""
     model = AccountInfo
     success_url = reverse_lazy('customer_list')
     login_url = "/login"
@@ -530,12 +560,12 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
         try:
             self.object.delete()
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({'success': True, 'message': '购买人已删除'})
+                return JsonResponse({'success': True, 'message': '顾客已删除'})
         except Exception:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': False,
-                    'message': '该购买人有关联订单，无法删除'
+                    'message': '该顾客有关联订单，无法删除'
                 }, status=400)
         return redirect(self.success_url)
 

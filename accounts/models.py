@@ -103,7 +103,7 @@ class Order(models.Model):
     total_price 由 calc_total() 方法根据 OrderItem 自动计算。
 
     Attributes:
-        account: 购买人（关联 AccountInfo）。
+        account: 顾客（关联 AccountInfo）。
         total_price: 应收总价（由行项合计自动生成）。
         total_price_real: 实收总价（手动输入）。
         buy_time: 购买时间。
@@ -117,7 +117,7 @@ class Order(models.Model):
     )
 
     account = models.ForeignKey(
-        AccountInfo, on_delete=models.CASCADE, verbose_name='购买人'
+        AccountInfo, on_delete=models.CASCADE, verbose_name='顾客'
     )
     total_price = models.DecimalField(
         max_digits=12, decimal_places=2, default=0.00, verbose_name='总价（应收）'
@@ -143,7 +143,7 @@ class Order(models.Model):
 
     def __str__(self):
         """返回订单详情摘要。"""
-        return (f"订单ID:{self.id} | 购买人:{self.account.name} | "
+        return (f"订单ID:{self.id} | 顾客:{self.account.name} | "
                 f"应收:{self.total_price}元 | 状态:{self.get_status_display()}")
 
     class Meta:

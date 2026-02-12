@@ -10,12 +10,12 @@
         onsubmit="submitModalForm(event); return false;">
         {% csrf_token %}
 
-        <!-- 购买人选择 + 快速新增 -->
+        <!-- 顾客选择 + 快速新增 -->
         <div class="form-group required">
             <label for="{{ form.account.id_for_label }}">{{ form.account.label }}</label>
             <div class="input-with-action">
                 {{ form.account }}
-                <button type="button" class="btn-quick-add" title="快速新增购买人"
+                <button type="button" class="btn-quick-add" title="快速新增顾客"
                     onclick="openModal('{% url 'customer_add' %}', 2)">+</button>
             </div>
             {% if form.account.errors %}
@@ -325,7 +325,7 @@
         window.currentEntityCreatedHandler = function (e) {
             const data = e.detail;
             if (data.id && data.text) {
-                // 1. 尝试添加到购买人下拉框
+                // 1. 尝试添加到顾客下拉框
                 const accountSelect = document.getElementById('id_account');
                 if (accountSelect) {
                     let exists = false;

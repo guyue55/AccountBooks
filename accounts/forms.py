@@ -3,7 +3,7 @@ AccountBooks 表单模块。
 
 提供三组核心业务表单：
 - GoodsInfoForm: 商品新增/编辑
-- AccountInfoForm: 购买人新增/编辑
+- AccountInfoForm: 顾客新增/编辑
 - OrderForm: 订单头信息
 - OrderItemForm + OrderItemFormSet: 订单行项（商品×数量）
 
@@ -37,7 +37,7 @@ class GoodsInfoForm(forms.ModelForm):
 
 
 class AccountInfoForm(forms.ModelForm):
-    """购买人信息表单 —— 购买人新增/编辑复用。"""
+    """顾客信息表单 —— 顾客新增/编辑复用。"""
 
     class Meta:
         model = AccountInfo
@@ -71,7 +71,7 @@ class AccountInfoForm(forms.ModelForm):
 class OrderForm(forms.ModelForm):
     """订单头信息表单。
 
-    仅包含购买人、实收金额和还款状态字段。
+    仅包含顾客、实收金额和还款状态字段。
     应收金额由 OrderItem 行项自动合计，不在此表单中暴露。
     """
 
