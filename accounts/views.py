@@ -22,6 +22,7 @@ from decimal import Decimal
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import Sum, Count
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect, reverse
@@ -295,11 +296,13 @@ class OrderCreateView(LoginRequiredMixin, AjaxFormMixin, CreateView):
 
     def _save_order(self, form, formset):
         """保存订单头和行项，计算总价。"""
-        order = form.save()
-        formset.instance = order
-        items = formset.save()
-        # 重新计算总价
-        order.calc_total()
+        with transaction.atomic():
+            order = form.save()
+            formset.instance = order
+            items = formset.save()
+            # 重新计算总价
+            order.calc_total()
+        
         if self._is_ajax(self.request):
             return JsonResponse({
                 'success': True,
@@ -351,9 +354,11 @@ class OrderUpdateView(LoginRequiredMixin, AjaxFormMixin, UpdateView):
 
     def _save_order(self, form, formset):
         """保存更新并重新计算总价。"""
-        order = form.save()
-        formset.save()
-        order.calc_total()
+        with transaction.atomic():
+            order = form.save()
+            formset.save()
+            order.calc_total()
+        
         if self._is_ajax(self.request):
             return JsonResponse({
                 'success': True,
@@ -602,7 +607,14 @@ class CalcPriceAPI(LoginRequiredMixin, View):
 
         for item in items:
             goods_id = item.get('goods_id')
-            quantity = int(item.get('quantity', 1))
+            try:
+                quantity = int(item.get('quantity', 1))
+                if quantity <= 0:
+                    raise ValueError("数量必须大于0")
+            except (ValueError, TypeError):
+                # 如果数量无效，默认按 0 处理，或者返回错误
+                quantity = 0
+
             try:
                 goods = GoodsInfo.objects.get(pk=goods_id)
                 subtotal = goods.goods_price * quantity

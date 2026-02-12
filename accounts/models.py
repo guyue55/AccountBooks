@@ -2,7 +2,6 @@
 AccountBooks 数据模型模块。
 
 定义了系统的核心业务实体，包括：
-- Account: 债务人基本分类
 - AccountInfo: 债务人详细信息
 - GoodsInfo: 商品及定价
 - Order: 交易订单头
@@ -13,29 +12,10 @@ AccountBooks 数据模型模块。
 from decimal import Decimal
 
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, Case, When, Value, DecimalField
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
-
-
-class Account(models.Model):
-    """记录债务人的基本分类信息。
-
-    Attributes:
-        name: 债务人的唯一标识名称。
-    """
-    name = models.CharField('债务人', max_length=50, unique=True)
-
-    def __str__(self):
-        """返回债务人名称。"""
-        return self.name
-
-    class Meta:
-        verbose_name = '债务人'
-        verbose_name_plural = '债务人列表'
-        db_table = 'accounts'
-        ordering = ['name']
 
 
 class AccountInfo(models.Model):
@@ -231,22 +211,33 @@ class AccountBooks(models.Model):
     def update_summary(self):
         """根据关联的所有订单重新计算账务汇总。
 
-        该方法会遍历关联的所有订单，并根据订单状态更新汇总字段。
+        使用数据库聚合函数替代 Python 循环，以提升性能。
         """
         orders = Order.objects.filter(account=self.account_info)
-        self.money_total = Decimal('0.00')
-        self.money_wait = Decimal('0.00')
-        self.money_over = Decimal('0.00')
-        self.money_default = Decimal('0.00')
-
-        for order in orders:
-            self.money_total += order.total_price
-            if order.status == 'ok':
-                self.money_over += order.total_price_real
-            elif order.status == 'wait':
-                self.money_wait += order.total_price
-            elif order.status == 'default':
-                self.money_default += order.total_price
+        
+        aggregates = orders.aggregate(
+            total=Sum('total_price'),
+            wait=Sum(Case(
+                When(status='wait', then='total_price'),
+                default=Value(0),
+                output_field=DecimalField()
+            )),
+            over=Sum(Case(
+                When(status='ok', then='total_price_real'),
+                default=Value(0),
+                output_field=DecimalField()
+            )),
+            default=Sum(Case(
+                When(status='default', then='total_price'),
+                default=Value(0),
+                output_field=DecimalField()
+            ))
+        )
+        
+        self.money_total = aggregates.get('total') or Decimal('0.00')
+        self.money_wait = aggregates.get('wait') or Decimal('0.00')
+        self.money_over = aggregates.get('over') or Decimal('0.00')
+        self.money_default = aggregates.get('default') or Decimal('0.00')
 
         self.save()
 

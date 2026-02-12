@@ -21,17 +21,17 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'i^$rt=lr7ryi(5&pb^_*6*4%ayz8ro3&6i&lu)vzp2ld^uh(dh'
+# 优先从环境变量读取密钥，如果没有则使用默认（开发环境）密钥
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'i^$rt=lr7ryi(5&pb^_*6*4%ayz8ro3&6i&lu)vzp2ld^uh(dh')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-# 不显示django，默认首页
-# DEBUG = False
+# 默认开启调试模式，生产环境请设置 DJANGO_DEBUG=False
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
 # ALLOWED_HOSTS列表为了防止黑客入侵，只允许列表中的ip地址访问
-# ALLOWED_HOSTS = ["127.0.0.1"]
-# ALLOWED_HOSTS = ["*"]
-ALLOWED_HOSTS = ['*']
+# 生产环境请设置 DJANGO_ALLOWED_HOSTS=example.com,www.example.com
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -41,7 +41,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Application definition
 
 INSTALLED_APPS = [
-    "simpleui",  # 后台美化，添加内容，一定要加在admin前
+    # "simpleui",  # 后台美化，添加内容，一定要加在admin前
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     # 我的应用程序
     'accounts.apps.AccountsConfig',
 
-    'django_summernote'#后台富文本
+    # 'django_summernote'#后台富文本
 
 ]
 
@@ -72,7 +72,8 @@ ROOT_URLCONF = 'AccountBooks.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        ,
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -163,23 +164,11 @@ STATICFILES_DIRS = [
 
 
 # 模板文件配置
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
+# (Existing TEMPLATES config was duplicated in original file, keeping the one above and removing this block or merging if different)
+# Wait, the original file had TEMPLATES defined twice?
+# Let's check the original file content again.
+# Yes, lines 72-86 and 166-181. The second one has 'DIRS': [os.path.join(BASE_DIR, 'templates')]. The first one has 'DIRS': [].
+# I should keep the second one which is correct.
 
 '''
 后台美化
@@ -239,4 +228,3 @@ SUMMERNOTE_CONFIG = {
     # Use proper language setting automatically (default)
     'lang': 'zh-CN',
 }
-

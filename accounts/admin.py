@@ -10,14 +10,7 @@ AccountBooks Admin 后台配置模块。
 
 from django.contrib import admin
 
-from .models import Account, AccountInfo, GoodsInfo, Order, OrderItem, AccountBooks
-
-
-@admin.register(Account)
-class AccountAdmin(admin.ModelAdmin):
-    """债务人基本信息管理。"""
-    list_display = ('name',)
-    search_fields = ('name',)
+from .models import AccountInfo, GoodsInfo, Order, OrderItem, AccountBooks
 
 
 @admin.register(AccountInfo)
