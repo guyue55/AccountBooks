@@ -41,7 +41,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Application definition
 
 INSTALLED_APPS = [
-    # "simpleui",  # 后台美化，添加内容，一定要加在admin前
+    'jazzmin',  # Django admin theme, must be before django.contrib.admin
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -170,61 +170,64 @@ STATICFILES_DIRS = [
 # Yes, lines 72-86 and 166-181. The second one has 'DIRS': [os.path.join(BASE_DIR, 'templates')]. The first one has 'DIRS': [].
 # I should keep the second one which is correct.
 
-'''
-后台美化
-对后台进行美化
-
-pip install django-simpleui
-pip install django_summernote
-
-设置setting.py: 
-
-INSTALLED_APPS = [
-    "simpleui",   #添加内容，一定要加在admin前
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'blog',
-
-    'django_summernote'#后台富文本
-]
-
-SUMMERNOTE_CONFIG = {
-    # Using SummernoteWidget - iframe mode
-    'iframe': True,  # or set False to use SummernoteInplaceWidget - no iframe mode
-
-    # Using Summernote Air-mode
-    'airMode': False,
-
-    # Use native HTML tags (`<b>`, `<i>`, ...) instead of style attributes
-    'styleWithSpan': False,
-
-    # Change editor size
-    'width': '80%',
-    'height': '480',
-
-    # Use proper language setting automatically (default)
-    'lang': 'zh-CN',
+# Django Jazzmin Settings
+JAZZMIN_SETTINGS = {
+    "site_title": "AccountBooks Admin",
+    "site_header": "AccountBooks",
+    "site_brand": "AccountBooks",
+    "welcome_sign": "欢迎使用 AccountBooks 管理系统",
+    "copyright": "AccountBooks Ltd",
+    "search_model": "accounts.Order",
+    "user_avatar": None,
+    "topmenu_links": [
+        {"name": "首页", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": "前台首页", "url": "/", "new_window": True},
+    ],
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "accounts.Order": "fas fa-shopping-cart",
+        "accounts.Goods": "fas fa-box",
+        "accounts.Customer": "fas fa-user-tie",
+    },
+    "default_icon_parents": "fas fa-chevron-circle-right",
+    "default_icon_children": "fas fa-circle",
+    "related_modal_active": True,
+    "use_google_fonts_cdn": True,
+    "show_ui_builder": False,
 }
-'''
 
-SUMMERNOTE_CONFIG = {
-    # Using SummernoteWidget - iframe mode
-    'iframe': True,  # or set False to use SummernoteInplaceWidget - no iframe mode
-
-    # Using Summernote Air-mode
-    'airMode': False,
-
-    # Use native HTML tags (`<b>`, `<i>`, ...) instead of style attributes
-    'styleWithSpan': False,
-
-    # Change editor size
-    'width': '80%',
-    'height': '480',
-
-    # Use proper language setting automatically (default)
-    'lang': 'zh-CN',
+JAZZMIN_UI_TWEAKS = {
+    "navbar_small_text": False,
+    "footer_small_text": False,
+    "body_small_text": False,
+    "brand_small_text": False,
+    "brand_colour": "navbar-primary",
+    "accent": "accent-primary",
+    "navbar": "navbar-white navbar-light",
+    "no_navbar_border": False,
+    "navbar_fixed": True,
+    "layout_boxed": False,
+    "footer_fixed": False,
+    "sidebar_fixed": True,
+    "sidebar": "sidebar-dark-primary",
+    "sidebar_nav_small_text": False,
+    "sidebar_disable_expand": False,
+    "sidebar_nav_child_indent": True,
+    "sidebar_nav_compact_style": False,
+    "sidebar_nav_legacy_style": False,
+    "sidebar_nav_flat_style": False,
+    "theme": "default",
+    "dark_mode_theme": None,
+    "button_classes": {
+        "primary": "btn-primary",
+        "secondary": "btn-secondary",
+        "info": "btn-info",
+        "warning": "btn-warning",
+        "danger": "btn-danger",
+        "success": "btn-success"
+    }
 }
