@@ -1,111 +1,104 @@
 {% load static %}
+
 <!-- 订单表单 Modal 片段 —— 新增/编辑复用，含 OrderItem formset -->
 <div class="modal-header">
-    <h2>{{ title|default:"新增交易记录" }}</h2>
-    <button class="modal-close" onclick="closeModal()" type="button">&times;</button>
+  <h2>{{ title|default:"新增交易记录" }}</h2>
+  <button class="modal-close" onclick="closeModal()" type="button">&times;</button>
 </div>
 <div class="modal-body">
-    <form method="post" id="orderForm"
+  <form method="post"
+        id="orderForm"
         action="{% if is_edit %}{% url 'order_edit' object.pk %}{% else %}{% url 'order_add' %}{% endif %}"
         onsubmit="submitModalForm(event); return false;">
-        {% csrf_token %}
-
-        <!-- 顾客选择 + 快速新增 -->
-        <div class="form-group required">
-            <label for="{{ form.account.id_for_label }}">{{ form.account.label }}</label>
-            <div class="input-with-action">
-                {{ form.account }}
-                <button type="button" class="btn-quick-add" title="快速新增顾客"
-                    onclick="openModal('{% url 'customer_add' %}', 2)">+</button>
-            </div>
-            {% if form.account.errors %}
-            <div class="form-error">{{ form.account.errors.0 }}</div>
-            {% endif %}
-        </div>
-
-        <!-- 商品行项 -->
-        <div class="form-group">
-            <label>商品明细</label>
-            {{ formset.management_form }}
-            <table class="order-items-table" id="orderItemsTable">
-                <thead>
-                    <tr>
-                        <th style="width: 40%;">商品</th>
-                        <th style="width: 20%;">数量</th>
-                        <th style="width: 25%;">单价</th>
-                        <th style="width: 15%;"></th>
-                    </tr>
-                </thead>
-                <tbody id="orderItemsBody">
-                    {% for item_form in formset %}
-                    <tr class="order-item-row">
-                        {% if item_form.instance.pk %}
-                        <input type="hidden" name="{{ item_form.prefix }}-id" value="{{ item_form.instance.pk }}">
-                        {% endif %}
-                        <td>
-                            <div class="input-with-action">
-                                {{ item_form.goods }}
-                                <button type="button" class="btn-quick-add" title="快速新增商品"
-                                    onclick="openModal('{% url 'goods_add' %}', 2)"
-                                    style="width: 32px; height: 32px; font-size: 1rem;">+</button>
-                            </div>
-                            {% if item_form.goods.errors %}
-                            <div class="form-error">{{ item_form.goods.errors.0 }}</div>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ item_form.quantity }}
-                            {% if item_form.quantity.errors %}
-                            <div class="form-error">{{ item_form.quantity.errors.0 }}</div>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {{ item_form.unit_price }}
-                        </td>
-                        <td style="text-align: center; vertical-align: middle;">
-                            <div style="display: none;">{{ item_form.DELETE }}</div>
-                            <button type="button" class="btn-remove-row" onclick="removeItemRow(this)"
-                                data-tooltip="移除此行">✕</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <button type="button" class="btn-add-row" onclick="addItemRow()">+ 添加商品行</button>
-        </div>
-
-        <!-- 应收总价（自动计算，只读） -->
-        <div class="total-display" id="totalDisplay">
-            应收总价：<span>¥ 0.00</span>
-        </div>
-
-        <!-- 实收金额 -->
-        <div class="form-group">
-            <label for="{{ form.total_price_real.id_for_label }}">{{ form.total_price_real.label }}</label>
-            {{ form.total_price_real }}
-            {% if form.total_price_real.errors %}
-            <div class="form-error">{{ form.total_price_real.errors.0 }}</div>
-            {% endif %}
-        </div>
-
-        <!-- 还款状态 -->
-        <div class="form-group required">
-            <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
-            {{ form.status }}
-            {% if form.status.errors %}
-            <div class="form-error">{{ form.status.errors.0 }}</div>
-            {% endif %}
-        </div>
-
-        <div class="modal-btn-group">
-            <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
-            <button type="submit" class="btn btn-primary">保存</button>
-        </div>
-    </form>
+    {% csrf_token %}
+    <!-- 顾客选择 + 快速新增 -->
+    <div class="form-group required">
+      <label for="{{ form.account.id_for_label }}">{{ form.account.label }}</label>
+      <div class="input-with-action">
+        {{ form.account }}
+        <button type="button"
+                class="btn-quick-add"
+                title="快速新增顾客"
+                onclick="openModal('{% url 'customer_add' %}', 2)">+</button>
+      </div>
+      {% if form.account.errors %}<div class="form-error">{{ form.account.errors.0 }}</div>{% endif %}
+    </div>
+    <!-- 商品行项 -->
+    <div class="form-group">
+      <label>商品明细</label>
+      {{ formset.management_form }}
+      <table class="order-items-table" id="orderItemsTable">
+        <thead>
+          <tr>
+            <th style="width: 40%;">商品</th>
+            <th style="width: 20%;">数量</th>
+            <th style="width: 25%;">单价</th>
+            <th style="width: 15%;"></th>
+          </tr>
+        </thead>
+        <tbody id="orderItemsBody">
+          {% for item_form in formset %}
+            <tr class="order-item-row">
+              {% if item_form.instance.pk %}
+                <input type="hidden"
+                       name="{{ item_form.prefix }}-id"
+                       value="{{ item_form.instance.pk }}">
+              {% endif %}
+              <td>
+                <div class="input-with-action">
+                  {{ item_form.goods }}
+                  <button type="button"
+                          class="btn-quick-add"
+                          title="快速新增商品"
+                          onclick="openModal('{% url 'goods_add' %}', 2)"
+                          style="width: 32px;
+                                 height: 32px;
+                                 font-size: 1rem">+</button>
+                </div>
+                {% if item_form.goods.errors %}<div class="form-error">{{ item_form.goods.errors.0 }}</div>{% endif %}
+              </td>
+              <td>
+                {{ item_form.quantity }}
+                {% if item_form.quantity.errors %}<div class="form-error">{{ item_form.quantity.errors.0 }}</div>{% endif %}
+              </td>
+              <td>{{ item_form.unit_price }}</td>
+              <td style="text-align: center; vertical-align: middle;">
+                <div style="display: none;">{{ item_form.DELETE }}</div>
+                <button type="button"
+                        class="btn-remove-row"
+                        onclick="removeItemRow(this)"
+                        data-tooltip="移除此行">✕</button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <button type="button" class="btn-add-row" onclick="addItemRow()">+ 添加商品行</button>
+    </div>
+    <!-- 应收总价（自动计算，只读） -->
+    <div class="total-display" id="totalDisplay">
+      应收总价：<span>¥ 0.00</span>
+    </div>
+    <!-- 实收金额 -->
+    <div class="form-group">
+      <label for="{{ form.total_price_real.id_for_label }}">{{ form.total_price_real.label }}</label>
+      {{ form.total_price_real }}
+      {% if form.total_price_real.errors %}<div class="form-error">{{ form.total_price_real.errors.0 }}</div>{% endif %}
+    </div>
+    <!-- 还款状态 -->
+    <div class="form-group required">
+      <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+      {{ form.status }}
+      {% if form.status.errors %}<div class="form-error">{{ form.status.errors.0 }}</div>{% endif %}
+    </div>
+    <div class="modal-btn-group">
+      <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+      <button type="submit" class="btn btn-primary">保存</button>
+    </div>
+  </form>
 </div>
-
 <script>
-    (function () {
+    (function() {
         /**
          * 获取当前 formset 的总表单数量。
          */
@@ -124,7 +117,7 @@
          * 添加新的商品行。
          * 复制第一行的 HTML 结构，重置索引和值。
          */
-        window.addItemRow = function () {
+        window.addItemRow = function() {
             const tbody = document.getElementById('orderItemsBody');
             const totalForms = getTotalForms();
 
@@ -166,7 +159,7 @@
          * 移除商品行。
          * 如果行有 DELETE checkbox，则标记为删除而非直接移除 DOM。
          */
-        window.removeItemRow = function (btn) {
+        window.removeItemRow = function(btn) {
             const row = btn.closest('.order-item-row');
             const deleteCheckbox = row.querySelector('input[type="checkbox"][name*="DELETE"]');
             if (deleteCheckbox) {
@@ -264,8 +257,10 @@
             }
 
             fetch(`/api/calc-price?goods_id=${goodsId}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                 .then(r => r.json())
                 .then(data => {
                     if (priceInput) {
@@ -290,7 +285,9 @@
                 const priceInput = row.querySelector('input[name*="unit_price"]');
 
                 if (goodsSelect && !goodsSelect._bound) {
-                    goodsSelect.addEventListener('change', function () { onGoodsChange(this); });
+                    goodsSelect.addEventListener('change', function() {
+                        onGoodsChange(this);
+                    });
                     goodsSelect._bound = true;
                 }
                 if (qtyInput && !qtyInput._bound) {
@@ -311,7 +308,7 @@
         // 监听实收金额的手动修改
         const realPriceInput = document.getElementById('id_total_price_real');
         if (realPriceInput) {
-            realPriceInput.addEventListener('input', function () {
+            realPriceInput.addEventListener('input', function() {
                 this._manuallyEdited = true;
             });
         }
@@ -322,7 +319,7 @@
             document.removeEventListener('entity-created', window.currentEntityCreatedHandler);
         }
 
-        window.currentEntityCreatedHandler = function (e) {
+        window.currentEntityCreatedHandler = function(e) {
             const data = e.detail;
             if (data.id && data.text) {
                 // 1. 尝试添加到顾客下拉框

@@ -1,99 +1,115 @@
 {% extends "base.html" %}
 
 {% block title %}顾客管理 - AccountBooks{% endblock %}
-
 {% block content %}
-<header class="page-header">
+  <header class="page-header">
     <div>
-        <h1>顾客管理</h1>
-        <p>管理系统中的所有顾客（债务人）信息。</p>
+      <h1>顾客管理</h1>
+      <p>管理系统中的所有顾客（债务人）信息。</p>
     </div>
-    <button class="btn btn-primary" onclick="openModal('{% url 'customer_add' %}')">
-        + 新增顾客
-    </button>
-</header>
-
-<!-- 极简单行筛选 -->
-<form method="get" class="filter-toolbar" id="filterForm">
+    <button class="btn btn-primary"
+            onclick="openModal('{% url 'customer_add' %}')">+ 新增顾客</button>
+  </header>
+  <!-- 极简单行筛选 -->
+  <form method="get" class="filter-toolbar" id="filterForm">
     <!-- 搜索 -->
     <div class="filter-item filter-item-search">
-        <svg class="filter-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 10px; opacity: 0.6;">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" name="q" placeholder="搜索姓名/地址/备注..." class="filter-item-input"
-            value="{{ request.GET.q|default:'' }}">
+      <svg class="filter-icon"
+           width="15"
+           height="15"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2.5"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           style="margin-left: 10px;
+                  opacity: 0.6">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text"
+             name="q"
+             placeholder="搜索姓名/地址/备注..."
+             class="filter-item-input"
+             value="{{ request.GET.q|default:'' }}">
     </div>
-
     <!-- 操作按钮组 (紧跟在后面) -->
     <div class="filter-actions" style="display: flex; gap: 8px;">
-        <button type="submit" class="btn-filter-icon btn-filter-submit" data-tooltip="执行筛选">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-            </svg>
-        </button>
+      <button type="submit"
+              class="btn-filter-icon btn-filter-submit"
+              data-tooltip="执行筛选">
+        <svg width="18"
+             height="18"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+        </svg>
+      </button>
     </div>
-</form>
-
-<div class="table-container">
+  </form>
+  <div class="table-container">
     <table>
-        <thead>
-            <tr>
-                <th class="col-id">ID</th>
-                <th>名称</th>
-                <th>真实姓名</th>
-                <th>年龄</th>
-                <th>地址</th>
-                <th>备注</th>
-                <th>更新时间</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for customer in customers %}
-            <tr>
-                <td class="col-id" style="color: var(--text-dim);">{{ customer.id }}</td>
-                <td style="font-weight: 500;">{{ customer.name }}</td>
-                <td>{{ customer.real_name|default:"-" }}</td>
-                <td>{{ customer.age|default:"-" }}</td>
-                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.location }}</td>
-                <td
-                    style="color: var(--text-dim); font-size: 0.875rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    {{ customer.remarks|default:"-" }}
-                </td>
-                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.updated|date:"Y-m-d H:i" }}</td>
-                <td>
-                    <div class="action-group">
-                        <button class="action-link action-link-edit"
-                            onclick="openModal('{% url 'customer_edit' customer.pk %}')">编辑</button>
-                        <button class="action-link action-link-delete"
-                            onclick="confirmDelete('{% url 'customer_delete' customer.pk %}', '{{ customer.name }} ({{ customer.real_name|default:'未设置' }})')">删除</button>
-                    </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="8" class="empty-state">
-                    <p>暂无顾客信息</p>
-                    <p style="margin-top: 0.5rem; font-size: 0.875rem;">点击右上角「新增顾客」开始添加</p>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead>
+        <tr>
+          <th class="col-id">ID</th>
+          <th>名称</th>
+          <th>真实姓名</th>
+          <th>年龄</th>
+          <th>地址</th>
+          <th>备注</th>
+          <th>更新时间</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for customer in customers %}
+          <tr>
+            <td class="col-id" style="color: var(--text-dim);">{{ customer.id }}</td>
+            <td style="font-weight: 500;">{{ customer.name }}</td>
+            <td>{{ customer.real_name|default:"-" }}</td>
+            <td>{{ customer.age|default:"-" }}</td>
+            <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.location }}</td>
+            <td style="color: var(--text-dim);
+                       font-size: 0.875rem;
+                       max-width: 200px;
+                       overflow: hidden;
+                       text-overflow: ellipsis;
+                       white-space: nowrap">{{ customer.remarks|default:"-" }}</td>
+            <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.updated|date:"Y-m-d H:i" }}</td>
+            <td>
+              <div class="action-group">
+                <button class="action-link action-link-edit"
+                        onclick="openModal('{% url 'customer_edit' customer.pk %}')">编辑</button>
+                <button class="action-link action-link-delete"
+                        onclick="confirmDelete('{% url 'customer_delete' customer.pk %}', '{{ customer.name }} ({{ customer.real_name|default:'未设置' }})')">
+                  删除
+                </button>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="empty-state">
+              <p>暂无顾客信息</p>
+              <p style="margin-top: 0.5rem; font-size: 0.875rem;">点击右上角「新增顾客」开始添加</p>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
-
     {% if is_paginated %}
-    <div class="pagination">
+      <div class="pagination">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}&{{ query_string }}">&laquo;</a>
+          <a href="?page={{ page_obj.previous_page_number }}&{{ query_string }}">&laquo;</a>
         {% endif %}
         <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}&{{ query_string }}">&raquo;</a>
-        {% endif %}
-    </div>
+        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&{{ query_string }}">&raquo;</a>{% endif %}
+      </div>
     {% endif %}
-</div>
+  </div>
 {% endblock %}

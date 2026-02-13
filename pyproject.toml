@@ -26,15 +26,36 @@ classifiers = [
 dependencies = [
     "Django>=3.2.13",
     "django-jazzmin>=2.6.0",
+    "djlint>=1.34.0",
 ]
+
+[tool.djlint]
+# 检查格式命令: uv run djlint . --check
+# 自动修复格式命令（安全模式）: uv run djlint . --reformat
+profile = "django"
+ignore = "H006,H030,H031" # 忽略一些对 Jinja2 不友好的规则
+indent = 2
+blank_line_after_tag = "load,extends,include"
+format_css = true
+format_js = true
 
 [tool.ruff]
 line-length = 88
 target-version = "py310"
 
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "TID"]
-ignore = []
+# E/W: pycodestyle, F: Pyflakes, I: isort, N: pep8-naming, D: pydocstyle
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM", "TID", "D"]
+ignore = ["D100", "D101", "D104", "D106"] # 忽略部分强制文档要求，避免过于严格
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.django]
 settings_module = "AccountBooks.settings"

@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block title %}账簿管理系统 - Dashboard{% endblock %}
-
 {% block content %}
 <header class="page-header">
     <div>
@@ -9,7 +8,6 @@
         <p>欢迎回来，这里是您的实时账务数据汇总。</p>
     </div>
 </header>
-
 <!-- 统计卡片 -->
 <div class="stats-grid">
     <div class="stat-card">
@@ -33,7 +31,6 @@
         <div class="stat-value" style="color: var(--primary-color)">{{ collection_rate|default:"0" }}%</div>
     </div>
 </div>
-
 <!-- 债务人明细表 -->
 <div class="table-container">
     <h3>债务人详情</h3>
