@@ -68,6 +68,15 @@
             overflow: visible;
             /* 允许 Tooltip 溢出 */
         }
+        
+        /* 预加载时禁止动画，防止闪烁 */
+        body.preload .sidebar,
+        body.preload .main-content,
+        body.preload .sidebar-logo,
+        body.preload .nav-text,
+        body.preload .user-info {
+            transition: none !important;
+        }
 
         .sidebar-header {
             display: flex;
@@ -1141,7 +1150,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="preload">
     <!-- ===== 侧边栏导航 ===== -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -1196,6 +1205,21 @@
             </div>
         </div>
     </div>
+    <script>
+        // Immediately apply sidebar state to avoid FOUC
+        (function() {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.getElementById('sidebar').classList.add('collapsed');
+                // Also update main content margin immediately
+                // We can't select .main-content yet as it's not in DOM?
+                // Actually it's just below. So we can't select it.
+                // But CSS .sidebar.collapsed + .main-content handles it IF they are siblings.
+                // Yes, they are siblings.
+                // So once .main-content is parsed, the CSS rule will apply immediately.
+            }
+        })();
+    </script>
     <!-- ===== 主内容区 ===== -->
     <div class="main-content">
         {% block content %}{% endblock %}
@@ -1238,6 +1262,11 @@
                 sidebar.classList.add('collapsed');
                 updateToggleIcon(true);
             }
+            
+            // Remove preload class to enable transitions
+            setTimeout(() => {
+                document.body.classList.remove('preload');
+            }, 100);
         });
 
         function getCsrfToken() {
