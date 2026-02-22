@@ -1,5 +1,9 @@
 from decimal import Decimal
+import json
 from django.test import TestCase
+from django.test import Client
+from django.urls import reverse
+from django.contrib.auth.models import User
 from accounts.models import AccountInfo, GoodsInfo, Order, OrderItem, AccountBooks
 
 class OrderTestCase(TestCase):
@@ -52,3 +56,27 @@ class AccountBooksTestCase(TestCase):
         self.assertEqual(books.money_over, Decimal("50.00"))      # order2 (实收)
         self.assertEqual(books.money_default, Decimal("100.00"))  # order3
         self.assertEqual(books.money_total, Decimal("300.00"))    # order1 + order2 + order3 (应收总和)
+
+
+class ApiValidationTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username="apiuser", password="pass12345")
+        self.client.login(username="apiuser", password="pass12345")
+        self.goods = GoodsInfo.objects.create(goods="Banana", goods_price=Decimal("5.00"))
+
+    def test_negative_quantity_returns_400(self):
+        url = reverse("calc_price")
+        payload = {
+            "items": [{"goods_id": self.goods.id, "quantity": -1}]
+        }
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_non_integer_quantity_returns_400(self):
+        url = reverse("calc_price")
+        payload = {
+            "items": [{"goods_id": self.goods.id, "quantity": "abc"}]
+        }
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        self.assertEqual(response.status_code, 400)

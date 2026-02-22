@@ -605,15 +605,20 @@ class CalcPriceAPI(LoginRequiredMixin, View):
         result_items = []
         total = Decimal('0.00')
 
-        for item in items:
+        for idx, item in enumerate(items):
             goods_id = item.get('goods_id')
             try:
                 quantity = int(item.get('quantity', 1))
                 if quantity <= 0:
-                    raise ValueError("数量必须大于0")
+                    return JsonResponse(
+                        {'error': '数量必须大于0', 'index': idx, 'goods_id': goods_id},
+                        status=400,
+                    )
             except (ValueError, TypeError):
-                # 如果数量无效，默认按 0 处理，或者返回错误
-                quantity = 0
+                return JsonResponse(
+                    {'error': '数量必须为正整数', 'index': idx, 'goods_id': goods_id},
+                    status=400,
+                )
 
             try:
                 goods = GoodsInfo.objects.get(pk=goods_id)
