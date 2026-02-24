@@ -21,7 +21,7 @@ class GoodsInfoForm(forms.ModelForm):
 
     class Meta:
         model = GoodsInfo
-        fields = ['goods', 'goods_price']
+        fields = ['goods', 'goods_price', 'purchase_price']
         widgets = {
             'goods': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -30,6 +30,12 @@ class GoodsInfoForm(forms.ModelForm):
             'goods_price': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'placeholder': '0.00',
+                'step': '0.01',
+                'min': '0',
+            }),
+            'purchase_price': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'placeholder': '0.00 (选填)',
                 'step': '0.01',
                 'min': '0',
             }),

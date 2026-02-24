@@ -39,6 +39,7 @@
         <th class="col-id">ID</th>
         <th>商品名称</th>
         <th>单价（元）</th>
+        <th>进价（元）</th>
         <th>创建时间</th>
         <th>更新时间</th>
         <th>操作</th>
@@ -50,6 +51,7 @@
         <td class="col-id" style="color: var(--text-dim);">{{ goods.id }}</td>
         <td style="font-weight: 500;">{{ goods.goods }}</td>
         <td style="color: var(--accent-green); font-weight: 600;">¥ {{ goods.goods_price }}</td>
+        <td style="color: var(--text-dim);">{% if goods.purchase_price > 0 %}¥ {{ goods.purchase_price }}{% else %}-{% endif %}</td>
         <td style="color: var(--text-dim); font-size: 0.875rem;">{{ goods.created|date:"Y-m-d H:i" }}</td>
         <td style="color: var(--text-dim); font-size: 0.875rem;">{{ goods.updated|date:"Y-m-d H:i" }}</td>
         <td>
