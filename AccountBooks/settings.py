@@ -58,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 插入 WhiteNoise 中间件
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 需要记录cookies，注释该语句
@@ -162,6 +163,19 @@ STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise 优化配置：支持压缩和永不过期缓存
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
+# 解决 Jazzmin 等第三方库缺少 .map 文件导致的 collectstatic 报错
+WHITENOISE_MANIFEST_STRICT = False
 
 
 # 模板文件配置
