@@ -2,114 +2,130 @@
 
 {% block title %}顾客管理 - AccountBooks{% endblock %}
 {% block content %}
-  <header class="page-header">
-    <div>
-      <h1>顾客管理</h1>
-      <p>管理系统中的所有顾客（债务人）信息。</p>
-    </div>
-    <button class="btn btn-primary"
-            onclick="openModal('{% url 'customer_add' %}')">+ 新增顾客</button>
-  </header>
-  <!-- 极简单行筛选 -->
-  <form method="get" class="filter-toolbar" id="filterForm">
-    <!-- 搜索 -->
-    <div class="filter-item filter-item-search">
-      <svg class="filter-icon"
-           width="15"
-           height="15"
-           viewBox="0 0 24 24"
-           fill="none"
-           stroke="currentColor"
-           stroke-width="2.5"
-           stroke-linecap="round"
-           stroke-linejoin="round"
-           style="margin-left: 10px;
+<header class="page-header">
+  <div>
+    <h1>顾客管理</h1>
+    <p>管理系统中的所有顾客（债务人）信息。</p>
+  </div>
+  <button class="btn btn-primary" onclick="openModal('{% url 'customer_add' %}')">+ 新增顾客</button>
+</header>
+<!-- 极简单行筛选 -->
+<form method="get" class="filter-toolbar" id="filterForm">
+  <!-- 搜索 -->
+  <div class="filter-item filter-item-search">
+    <svg class="filter-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 10px;
                   opacity: 0.6">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input type="text" name="q" placeholder="搜索姓名/地址/备注..." class="filter-item-input"
+      value="{{ request.GET.q|default:'' }}">
+  </div>
+  <!-- 操作按钮组 (紧跟在后面) -->
+  <div class="filter-actions" style="display: flex; gap: 8px;">
+    <button type="submit" class="btn-filter-icon btn-filter-submit" data-tooltip="执行筛选">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
       </svg>
-      <input type="text"
-             name="q"
-             placeholder="搜索姓名/地址/备注..."
-             class="filter-item-input"
-             value="{{ request.GET.q|default:'' }}">
-    </div>
-    <!-- 操作按钮组 (紧跟在后面) -->
-    <div class="filter-actions" style="display: flex; gap: 8px;">
-      <button type="submit"
-              class="btn-filter-icon btn-filter-submit"
-              data-tooltip="执行筛选">
-        <svg width="18"
-             height="18"
-             viewBox="0 0 24 24"
-             fill="none"
-             stroke="currentColor"
-             stroke-width="2"
-             stroke-linecap="round"
-             stroke-linejoin="round">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-        </svg>
-      </button>
-    </div>
-  </form>
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th class="col-id">ID</th>
-          <th>名称</th>
-          <th>真实姓名</th>
-          <th>年龄</th>
-          <th>地址</th>
-          <th>备注</th>
-          <th>更新时间</th>
-          <th>操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for customer in customers %}
-          <tr>
-            <td class="col-id" style="color: var(--text-dim);">{{ customer.id }}</td>
-            <td style="font-weight: 500;">{{ customer.name }}</td>
-            <td>{{ customer.real_name|default:"-" }}</td>
-            <td>{{ customer.age|default:"-" }}</td>
-            <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.location }}</td>
-            <td style="color: var(--text-dim);
+    </button>
+  </div>
+</form>
+
+<!-- 批量操作栏 -->
+<div id="batchActionBar"
+  style="display: none; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; margin-bottom: 1rem;">
+  <span style="color: var(--text-main); font-size: 0.95rem;">已选择 <span id="selectedCount"
+      style="font-weight: bold; color: var(--primary-color);">0</span> 项</span>
+  <div style="display: flex; gap: 10px;">
+    <button class="btn btn-danger" onclick="confirmBatchDelete()">批量删除</button>
+  </div>
+</div>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllCustomers"
+            style="accent-color: var(--primary-color); width: 16px; height: 16px; cursor: pointer;"></th>
+        <th class="col-id">ID</th>
+        <th>名称</th>
+        <th>真实姓名</th>
+        <th>年龄</th>
+        <th>地址</th>
+        <th>备注</th>
+        <th>更新时间</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+      <tr>
+        <td style="text-align: center;"><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"
+            style="accent-color: var(--primary-color); width: 16px; height: 16px; cursor: pointer;"></td>
+        <td class="col-id" style="color: var(--text-dim);">{{ customer.id }}</td>
+        <td style="font-weight: 500;">{{ customer.name }}</td>
+        <td>{{ customer.real_name|default:"-" }}</td>
+        <td>{{ customer.age|default:"-" }}</td>
+        <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.location }}</td>
+        <td style="color: var(--text-dim);
                        font-size: 0.875rem;
                        max-width: 200px;
                        overflow: hidden;
                        text-overflow: ellipsis;
                        white-space: nowrap">{{ customer.remarks|default:"-" }}</td>
-            <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.updated|date:"Y-m-d H:i" }}</td>
-            <td>
-              <div class="action-group">
-                <button class="action-link action-link-edit"
-                        onclick="openModal('{% url 'customer_edit' customer.pk %}')">编辑</button>
-                <button class="action-link action-link-delete"
-                        onclick="confirmDelete('{% url 'customer_delete' customer.pk %}', '{{ customer.name }} ({{ customer.real_name|default:'未设置' }})')">
-                  删除
-                </button>
-              </div>
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="8" class="empty-state">
-              <p>暂无顾客信息</p>
-              <p style="margin-top: 0.5rem; font-size: 0.875rem;">点击右上角「新增顾客」开始添加</p>
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    {% if is_paginated %}
-      <div class="pagination">
-        {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}&{{ query_string }}">&laquo;</a>
-        {% endif %}
-        <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&{{ query_string }}">&raquo;</a>{% endif %}
-      </div>
+        <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.updated|date:"Y-m-d H:i" }}</td>
+        <td>
+          <div class="action-group">
+            <button class="action-link action-link-edit"
+              onclick="openModal('{% url 'customer_edit' customer.pk %}')">编辑</button>
+            <button class="action-link action-link-delete"
+              onclick="confirmDelete('{% url 'customer_delete' customer.pk %}', '{{ customer.name }} ({{ customer.real_name|default:'未设置' }})')">
+              删除
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9">
+          <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"
+              style="color: var(--text-dim); margin-bottom: 1rem; opacity: 0.5;">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+            <p style="font-size: 1.1rem; color: var(--text-main); font-weight: 500;">暂无顾客记录</p>
+            <p
+              style="margin-top: 0.5rem; color: var(--text-dim); font-size: 0.875rem; max-width: 250px; margin-left: auto; margin-right: auto;">
+              还没有任何顾客信息的记录，点击下方按钮添加第一位顾客。</p>
+            <button class="btn btn-primary" style="margin-top: 1.25rem; font-size: 0.85rem;"
+              onclick="openModal('{% url 'customer_create' %}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              新增第一位顾客
+            </button>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if is_paginated %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&{{ query_string }}">&laquo;</a>
     {% endif %}
+    <span class="current">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&{{ query_string }}">&raquo;</a>{% endif %}
   </div>
+  {% endif %}
+</div>
 {% endblock %}

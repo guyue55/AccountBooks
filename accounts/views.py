@@ -17,7 +17,10 @@ AccountBooks 视图模块。
 """
 
 import json
+import logging
 from decimal import Decimal
+
+logger = logging.getLogger('accounts')
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -27,6 +30,7 @@ from django.db.models import Sum, Count
 from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect, reverse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, TemplateView, CreateView, UpdateView, DeleteView
 
@@ -158,16 +162,19 @@ class AjaxFormMixin:
             return JsonResponse({
                 'success': True,
                 'message': self.success_message,
-                'id': self.object.pk,
+                'id': self.object.pk if self.object else None,
                 'text': str(self.object),
             })
+        logger.info(f"User {self.request.user} saved {self.model.__name__} {self.object.pk if self.object else 'new'}")
         return super().form_valid(form)
 
     def form_invalid(self, form):
         """表单校验失败：AJAX 时返回含错误信息的片段。"""
         if self._is_ajax(self.request):
             context = self.get_context_data(form=form)
+            logger.warning(f"User {self.request.user} failed to save {self.model.__name__} due to form errors.")
             return render(self.request, self.partial_template_name, context)
+        logger.warning(f"User {self.request.user} failed to save {self.model.__name__} (non-AJAX) due to form errors.")
         return super().form_invalid(form)
 
 
@@ -201,6 +208,32 @@ class DashboardView(LoginRequiredMixin, ListView):
             round(total_over / total_revenue * 100, 1)
             if total_revenue > 0 else 0
         )
+        
+        # 1. 图表数据：最近 7 天的收入趋势
+        today = timezone.now().date()
+        date_list = [(today - timezone.timedelta(days=i)) for i in range(6, -1, -1)]
+        revenue_trend_dates = [d.strftime('%m-%d') for d in date_list]
+        revenue_trend_data = []
+        for d in date_list:
+            daily_orders = Order.objects.filter(buy_time__date=d)
+            daily_sum = daily_orders.aggregate(total=Sum('total_price'))['total'] or 0
+            revenue_trend_data.append(float(daily_sum))
+            
+        # 2. 图表数据：欠款客户分布 (取前 5 名欠款最多的，其余归为"其他")
+        debt_books = AccountBooks.objects.filter(money_wait__gt=0).order_by('-money_wait')
+        debt_distribution = []
+        if debt_books.count() > 5:
+            top_5 = debt_books[:5]
+            others = debt_books[5:]
+            for b in top_5:
+                debt_distribution.append({'name': b.account_info.name, 'value': float(b.money_wait)})
+            others_sum = others.aggregate(total=Sum('money_wait'))['total'] or 0
+            if others_sum > 0:
+                debt_distribution.append({'name': '其他客户', 'value': float(others_sum)})
+        else:
+            for b in debt_books:
+                debt_distribution.append({'name': b.account_info.name, 'value': float(b.money_wait)})
+
         context.update({
             'active_nav': 'dashboard',
             'total_wait': aggregates.get('total_wait') or 0,
@@ -208,6 +241,11 @@ class DashboardView(LoginRequiredMixin, ListView):
             'total_default': aggregates.get('total_default') or 0,
             'order_count': order_stats.get('total_count') or 0,
             'collection_rate': collection_rate,
+            
+            # 图表所需 JSON 数据
+            'chart_revenue_dates': json.dumps(revenue_trend_dates),
+            'chart_revenue_data': json.dumps(revenue_trend_data),
+            'chart_debt_data': json.dumps(debt_distribution, ensure_ascii=False),
         })
         return context
 
@@ -302,6 +340,7 @@ class OrderCreateView(LoginRequiredMixin, AjaxFormMixin, CreateView):
             items = formset.save()
             # 重新计算总价
             order.calc_total()
+            logger.info(f"User {self.request.user} created Order {order.pk} with total {order.total_price_real}")
         
         if self._is_ajax(self.request):
             return JsonResponse({
@@ -358,6 +397,7 @@ class OrderUpdateView(LoginRequiredMixin, AjaxFormMixin, UpdateView):
             order = form.save()
             formset.save()
             order.calc_total()
+            logger.info(f"User {self.request.user} updated Order {order.pk} with total {order.total_price_real}")
         
         if self._is_ajax(self.request):
             return JsonResponse({
@@ -387,6 +427,7 @@ class OrderDeleteView(LoginRequiredMixin, DeleteView):
     def post(self, request, *args, **kwargs):
         """POST 删除并返回 JSON（AJAX）或重定向。"""
         self.object = self.get_object()
+        logger.info(f"User {request.user} deleted Order {self.object.pk}")
         self.object.delete()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': '交易记录已删除'})
@@ -469,10 +510,12 @@ class GoodsDeleteView(LoginRequiredMixin, DeleteView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         try:
+            logger.info(f"User {request.user} deleted Goods {self.object.pk}")
             self.object.delete()
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'message': '商品已删除'})
-        except Exception:
+        except Exception as e:
+            logger.warning(f"User {request.user} failed to delete Goods {self.object.pk}: {str(e)}")
             # 商品被 OrderItem 引用时无法删除 (PROTECT)
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
@@ -563,10 +606,12 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         try:
+            logger.info(f"User {request.user} deleted Customer {self.object.pk}")
             self.object.delete()
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'message': '顾客已删除'})
-        except Exception:
+        except Exception as e:
+            logger.warning(f"User {request.user} failed to delete Customer {self.object.pk}: {str(e)}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': False,
@@ -651,3 +696,130 @@ class CalcPriceAPI(LoginRequiredMixin, View):
             except GoodsInfo.DoesNotExist:
                 pass
         return JsonResponse({'unit_price': '0.00'})
+
+
+# ===========================================================================
+# 批量操作 API
+# ===========================================================================
+
+class OrderBatchDeleteView(LoginRequiredMixin, View):
+    """批量删除交易记录"""
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            ids = data.get('ids', [])
+            if not ids:
+                return JsonResponse({'success': False, 'message': '未选择任何记录'}, status=400)
+            
+            deleted_count, _ = Order.objects.filter(id__in=ids).delete()
+            logger.info(f"User {request.user} batch deleted {deleted_count} Orders")
+            return JsonResponse({'success': True, 'message': f'成功删除 {deleted_count} 条记录'})
+        except Exception as e:
+            logger.error(f"User {request.user} batch delete Orders failed: {str(e)}")
+            return JsonResponse({'success': False, 'message': f'批量删除失败: {str(e)}'}, status=500)
+
+class OrderBatchStatusView(LoginRequiredMixin, View):
+    """批量修改交易记录还款状态"""
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            ids = data.get('ids', [])
+            status = data.get('status')
+            
+            if not ids or not status:
+                return JsonResponse({'success': False, 'message': '参数错误'}, status=400)
+                
+            updated_count = Order.objects.filter(id__in=ids).update(status=status)
+            
+            # 手动触发账簿汇总更新，因为 bulk_update 无法触发 post_save Signal
+            affected_accounts = AccountInfo.objects.filter(order__in=ids).distinct()
+            for account in affected_accounts:
+                AccountBooks.objects.get(account_info=account).update_summary()
+            
+            logger.info(f"User {request.user} batch updated {updated_count} Orders to status '{status}'")
+            return JsonResponse({'success': True, 'message': f'成功更新 {updated_count} 条记录状态'})
+        except Exception as e:
+            logger.error(f"User {request.user} batch update Orders status failed: {str(e)}")
+            return JsonResponse({'success': False, 'message': f'批量更新失败: {str(e)}'}, status=500)
+
+class CustomerBatchDeleteView(LoginRequiredMixin, View):
+    """批量删除顾客记录"""
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            ids = data.get('ids', [])
+            if not ids:
+                return JsonResponse({'success': False, 'message': '未选择任何记录'}, status=400)
+            
+            # 使用原生 delete() 可能会触发 PROTECT，捕获之
+            from django.db.models import ProtectedError
+            try:
+                deleted_count, _ = AccountInfo.objects.filter(id__in=ids).delete()
+                logger.info(f"User {request.user} batch deleted {deleted_count} Customers")
+                return JsonResponse({'success': True, 'message': f'成功删除 {deleted_count} 名顾客'})
+            except ProtectedError:
+                logger.warning(f"User {request.user} failed to batch delete Customers due to ProtectedError")
+                return JsonResponse({'success': False, 'message': '部分顾客存在关联订单，无法直接删除'}, status=400)
+        except Exception as e:
+            logger.error(f"User {request.user} batch delete Customers failed: {str(e)}")
+            return JsonResponse({'success': False, 'message': f'批量删除失败: {str(e)}'}, status=500)
+
+
+# ===========================================================================
+# 数据导出视图 (CSV)
+# ===========================================================================
+
+import csv
+
+class ExportOrdersView(LoginRequiredMixin, View):
+    """导出交易记录为 CSV 文件。"""
+    login_url = "/login"
+
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="orders_export.csv"'
+        response.write(b'\xef\xbb\xbf')  # 写入 BOM, 防止 Excel 乱码
+
+        writer = csv.writer(response)
+        writer.writerow(['订单ID', '顾客姓名', '商品明细', '应收总价', '实收总价', '状态', '购买时间'])
+
+        orders = Order.objects.select_related('account').prefetch_related('items__goods').order_by('-buy_time')
+        for order in orders:
+            items_desc = " | ".join([f"{item.goods.goods}x{item.quantity}" for item in order.items.all()])
+            writer.writerow([
+                order.id,
+                order.account.name,
+                items_desc,
+                order.total_price,
+                order.total_price_real,
+                order.get_status_display(),
+                timezone.localtime(order.buy_time).strftime('%Y-%m-%d %H:%M:%S')
+            ])
+            
+        return response
+
+class ExportAccountBooksView(LoginRequiredMixin, View):
+    """导出账务汇总为 CSV 文件。"""
+    login_url = "/login"
+
+    def get(self, request, *args, **kwargs):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="accountbooks_export.csv"'
+        response.write(b'\xef\xbb\xbf')  # 写入 BOM
+
+        writer = csv.writer(response)
+        writer.writerow(['债务人', '联系地址', '累计应收', '当前待还', '已还金额', '赖账金额', '最后更新时间'])
+
+        books = AccountBooks.objects.select_related('account_info').order_by('-money_wait')
+        for book in books:
+            writer.writerow([
+                book.account_info.name,
+                book.account_info.location,
+                book.money_total,
+                book.money_wait,
+                book.money_over,
+                book.money_default,
+                timezone.localtime(book.updated).strftime('%Y-%m-%d %H:%M:%S')
+            ])
+            
+        return response

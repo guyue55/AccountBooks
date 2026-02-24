@@ -231,3 +231,56 @@ JAZZMIN_UI_TWEAKS = {
         "success": "btn-success"
     }
 }
+
+# ==============================================================================
+# LOGGING CONFIGURATION
+# ==============================================================================
+import os
+LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOGS_DIR):
+    os.makedirs(LOGS_DIR)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{asctime}] {levelname} | {name} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOGS_DIR, 'logs.log'),
+            'when': 'midnight',
+            'interval': 1,
+            'backupCount': 15,  # Retain logs for 15 days
+            'formatter': 'simple',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'accounts': {  # Adjust to your app name
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

@@ -33,6 +33,13 @@ urlpatterns = [
 
     # ----- API -----
     path('api/calc-price', views.CalcPriceAPI.as_view(), name='calc_price'),
+    path('api/orders/batch-delete', views.OrderBatchDeleteView.as_view(), name='order_batch_delete'),
+    path('api/orders/batch-status', views.OrderBatchStatusView.as_view(), name='order_batch_status'),
+    path('api/customers/batch-delete', views.CustomerBatchDeleteView.as_view(), name='customer_batch_delete'),
+
+    # ----- 数据导出 -----
+    path('export/orders', views.ExportOrdersView.as_view(), name='export_orders'),
+    path('export/accountbooks', views.ExportAccountBooksView.as_view(), name='export_accountbooks'),
 
     # ----- 工具/调试 -----
     path('debug/namespace', views.NamespaceInfoView.as_view(), name='namespace'),

@@ -68,7 +68,7 @@
             overflow: visible;
             /* 允许 Tooltip 溢出 */
         }
-        
+
         /* 预加载时禁止动画，防止闪烁 */
         body.preload .sidebar,
         body.preload .main-content,
@@ -1207,7 +1207,7 @@
     </div>
     <script>
         // Immediately apply sidebar state to avoid FOUC
-        (function() {
+        (function () {
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (isCollapsed) {
                 document.getElementById('sidebar').classList.add('collapsed');
@@ -1262,7 +1262,7 @@
                 sidebar.classList.add('collapsed');
                 updateToggleIcon(true);
             }
-            
+
             // Remove preload class to enable transitions
             setTimeout(() => {
                 document.body.classList.remove('preload');
@@ -1338,6 +1338,15 @@
             const container = form.closest('.modal-container');
             const level = container.id === 'modalContainer2' ? 2 : 1;
 
+            // 找到提交按钮并切换为 Loading 状态
+            const submitBtn = form.querySelector('button[type="submit"]');
+            let originalBtnHtml = '';
+            if (submitBtn) {
+                originalBtnHtml = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<svg class="spinner" viewBox="0 0 50 50" style="width:16px;height:16px;margin-right:8px;vertical-align:middle;animation:spin 1s linear infinite;"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="currentColor" style="stroke-linecap:round; animation:dash 1.5s ease-in-out infinite;"></circle></svg>提交中...`;
+            }
+
             fetch(form.action, {
                 method: 'POST',
                 body: new FormData(form),
@@ -1371,6 +1380,11 @@
                         oldScript.parentNode.replaceChild(newScript, oldScript);
                     });
                 });
+            }).catch(e => {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
             });
         }
 
@@ -1381,14 +1395,23 @@
                 <div class="modal-body">
                     <p style="text-align:center; padding: 1rem 0;">确定要删除 <strong>${name}</strong> 吗？此操作不可撤销。</p>
                     <div class="modal-btn-group">
-                        <button class="btn btn-secondary" onclick="closeModal()">取消</button>
-                        <button class="btn btn-danger" onclick="executeDelete('${url}')">确认删除</button>
+                        <button id="deleteCancelBtn" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                        <button id="deleteConfirmBtn" class="btn btn-danger" onclick="executeDelete('${url}')">确认删除</button>
                     </div>
                 </div>`;
             document.getElementById('modalOverlay').classList.add('active');
         }
 
         function executeDelete(url) {
+            const confirmBtn = document.getElementById('deleteConfirmBtn');
+            const cancelBtn = document.getElementById('deleteCancelBtn');
+
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = `<svg class="spinner" viewBox="0 0 50 50" style="width:16px;height:16px;margin-right:8px;vertical-align:middle;animation:spin 1s linear infinite;"><circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="5" stroke="currentColor" style="stroke-linecap:round; animation:dash 1.5s ease-in-out infinite;"></circle></svg>删除中...`;
+                if (cancelBtn) cancelBtn.disabled = true;
+            }
+
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -1398,9 +1421,26 @@
             })
                 .then(r => {
                     if (r.ok) {
-                        closeModal();
-                        showToast('删除成功');
-                        setTimeout(() => location.reload(), 400);
+                        return r.json().then(data => {
+                            closeModal();
+                            showToast(data.message || '删除成功');
+                            setTimeout(() => location.reload(), 400);
+                        });
+                    } else {
+                        return r.json().then(data => {
+                            closeModal();
+                            alert(data.message || '删除失败，服务端受到外键保护约束。');
+                        }).catch(() => {
+                            closeModal();
+                            alert('删除失败，服务端遇到错误。');
+                        });
+                    }
+                })
+                .catch(() => {
+                    if (confirmBtn) {
+                        confirmBtn.disabled = false;
+                        confirmBtn.innerHTML = '确认删除';
+                        if (cancelBtn) cancelBtn.disabled = false;
                     }
                 });
         }
