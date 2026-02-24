@@ -156,3 +156,5 @@ cython_debug/
 .trae
 
 migrations/
+
+staticfiles/
