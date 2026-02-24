@@ -31,10 +31,11 @@ class AccountInfo(models.Model):
         updated: 更新时间。
     """
     name = models.CharField(max_length=50, verbose_name='债务人', default="")
-    real_name = models.CharField(max_length=50, verbose_name='真实姓名', default="")
-    age = models.IntegerField(verbose_name='年龄', default=0)
-    location = models.CharField(max_length=100, verbose_name='地址', default="未知地区")
-    remarks = models.CharField(max_length=200, verbose_name='备注', default="")
+    real_name = models.CharField(max_length=50, verbose_name='真实姓名', default="", blank=True)
+    age = models.IntegerField(verbose_name='年龄', default=0, blank=True)
+    phone = models.CharField(max_length=20, verbose_name='联系电话', default="", blank=True)
+    location = models.CharField(max_length=100, verbose_name='地址', default="未知地区", blank=True)
+    remarks = models.CharField(max_length=200, verbose_name='备注', default="", blank=True)
     created = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated = models.DateTimeField(auto_now=True, verbose_name='更新时间')
 

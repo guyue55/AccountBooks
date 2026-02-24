@@ -41,7 +41,7 @@ class AccountInfoForm(forms.ModelForm):
 
     class Meta:
         model = AccountInfo
-        fields = ['name', 'real_name', 'age', 'location', 'remarks']
+        fields = ['name', 'real_name', 'phone', 'age', 'location', 'remarks']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-input',
@@ -49,16 +49,20 @@ class AccountInfoForm(forms.ModelForm):
             }),
             'real_name': forms.TextInput(attrs={
                 'class': 'form-input',
-                'placeholder': '请输入真实姓名',
+                'placeholder': '请输入真实姓名 (选填)',
+            }),
+            'phone': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': '请输入联系电话 (选填)',
             }),
             'age': forms.NumberInput(attrs={
                 'class': 'form-input',
-                'placeholder': '0',
+                'placeholder': '0 (选填)',
                 'min': '0',
             }),
             'location': forms.TextInput(attrs={
                 'class': 'form-input',
-                'placeholder': '请输入地址',
+                'placeholder': '请输入地址 (选填)',
             }),
             'remarks': forms.Textarea(attrs={
                 'class': 'form-input',

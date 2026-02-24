@@ -52,6 +52,7 @@
         <th class="col-id">ID</th>
         <th>名称</th>
         <th>真实姓名</th>
+        <th>电话</th>
         <th>年龄</th>
         <th>地址</th>
         <th>备注</th>
@@ -67,6 +68,7 @@
         <td class="col-id" style="color: var(--text-dim);">{{ customer.id }}</td>
         <td style="font-weight: 500;">{{ customer.name }}</td>
         <td>{{ customer.real_name|default:"-" }}</td>
+        <td>{{ customer.phone|default:"-" }}</td>
         <td>{{ customer.age|default:"-" }}</td>
         <td style="color: var(--text-dim); font-size: 0.875rem;">{{ customer.location }}</td>
         <td style="color: var(--text-dim);
