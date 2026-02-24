@@ -41,6 +41,18 @@ class GoodsInfoForm(forms.ModelForm):
             }),
         }
 
+    def clean_goods(self):
+        """校验商品名称唯一性。"""
+        goods_name = self.cleaned_data.get('goods')
+        # 如果是编辑现有商品，排除自身
+        exists = GoodsInfo.objects.filter(goods=goods_name)
+        if self.instance and self.instance.pk:
+            exists = exists.exclude(pk=self.instance.pk)
+        
+        if exists.exists():
+            raise forms.ValidationError("该商品名称已存在，请勿重复创建。")
+        return goods_name
+
 
 class AccountInfoForm(forms.ModelForm):
     """顾客信息表单 —— 顾客新增/编辑复用。"""

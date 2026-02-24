@@ -59,7 +59,7 @@ class GoodsInfo(models.Model):
         created: 创建时间。
         updated: 更新时间。
     """
-    goods = models.CharField(max_length=50, verbose_name='商品名称', default="其它")
+    goods = models.CharField(max_length=50, verbose_name='商品名称', default="其它", unique=True)
     goods_price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00, verbose_name='单价（元）'
     )
