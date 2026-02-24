@@ -1,0 +1,43 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Docker
+Dockerfile
+.dockerignore
+
+# IDEs
+.idea
+.vscode
+.trae
+
+# Local Development
+local_settings.py
+.env
+.coverage
+htmlcov/
+pytest_cache/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Static (Generated)
+staticfiles/
