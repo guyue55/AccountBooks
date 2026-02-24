@@ -19,6 +19,9 @@ uv sync
 echo "🗄️  Applying database migrations..."
 uv run python manage.py migrate
 
+echo "🎨 Collecting static files..."
+uv run python manage.py collectstatic --noinput
+
 # 4. Create default superuser
 echo "👤 Checking/Creating superuser (admin)..."
 cat <<EOF > create_superuser_temp.py

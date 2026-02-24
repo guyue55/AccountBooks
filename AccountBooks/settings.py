@@ -161,6 +161,7 @@ STATIC_URL = '/static/'  # 别名
 STATICFILES_DIRS = [
         os.path.join(BASE_DIR, 'static'),
 ]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 # 模板文件配置
