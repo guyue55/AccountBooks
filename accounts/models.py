@@ -64,7 +64,7 @@ class GoodsInfo(models.Model):
         max_digits=10, decimal_places=2, default=0.00, verbose_name='单价（元）'
     )
     purchase_price = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.00, verbose_name='进价（元）', blank=True
+        max_digits=10, decimal_places=2, default=0.00, verbose_name='进价（元）', blank=True, null=True
     )
     created = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     updated = models.DateTimeField(auto_now=True, verbose_name='更新时间')
