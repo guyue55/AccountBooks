@@ -12,10 +12,37 @@ AccountBooks 数据模型模块。
 from decimal import Decimal
 
 from django.db import models
+from django.contrib.auth.models import User
 from django.db.models import Sum, Case, When, Value, DecimalField
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.utils import timezone
+
+
+class UserProfile(models.Model):
+    """用户个性化设置模型。"""
+    THEME_CHOICES = (
+        ('dark', 'Linear Dark'),
+        ('light', 'Vercel Light'),
+        ('nord', 'Nordic Frost'),
+        ('purple', 'Midnight Amethyst'),
+    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='dark', verbose_name='系统主题')
+
+    def __str__(self):
+        return f"{self.user.username} 的个人设置"
+
+    @receiver(post_save, sender=User)
+    def create_user_profile(sender, instance, created, **kwargs):
+        if created:
+            UserProfile.objects.create(user=instance)
+
+    @receiver(post_save, sender=User)
+    def save_user_profile(sender, instance, **kwargs):
+        if not hasattr(instance, 'profile'):
+            UserProfile.objects.create(user=instance)
+        instance.profile.save()
 
 
 class SoftDeleteQuerySet(models.QuerySet):
@@ -228,7 +255,7 @@ class AccountBooks(SoftDeleteModel):
     """记录每个债务人的账务汇总。
 
     Attributes:
-        account_info: 关联的债务人详情。
+        account_info: 关联的债务人详情。calc_total
         money_total: 累计应收总金额。
         money_wait: 当前待还总金额。
         money_over: 已还总金额。

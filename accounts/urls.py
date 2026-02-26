@@ -40,6 +40,7 @@ urlpatterns = [
     # ----- 数据导出 -----
     path('export/orders', views.ExportOrdersView.as_view(), name='export_orders'),
     path('export/accountbooks', views.ExportAccountBooksView.as_view(), name='export_accountbooks'),
+    path('settings/theme', views.ThemeSwitchView.as_view(), name='switch_theme'),
 
     # ----- 工具/调试 -----
     path('debug/namespace', views.NamespaceInfoView.as_view(), name='namespace'),

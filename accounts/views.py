@@ -38,7 +38,7 @@ from .forms import (
     OrderForm, OrderItemFormSet,
     GoodsInfoForm, AccountInfoForm,
 )
-from .models import AccountBooks, AccountInfo, GoodsInfo, Order, OrderItem
+from .models import AccountBooks, AccountInfo, GoodsInfo, Order, OrderItem, UserProfile
 
 
 # ===========================================================================
@@ -845,3 +845,15 @@ class ExportAccountBooksView(LoginRequiredMixin, View):
             ])
             
         return response
+
+class ThemeSwitchView(LoginRequiredMixin, View):
+    """处理用户切换主题的 AJAX 请求。"""
+    def post(self, request, *args, **kwargs):
+        theme = request.POST.get('theme')
+        if theme in ['dark', 'light', 'nord', 'purple']:
+            # 使用 get_or_create 确保 profile 存在
+            profile, created = UserProfile.objects.get_or_create(user=request.user)
+            profile.theme = theme
+            profile.save()
+            return JsonResponse({'status': 'ok', 'theme': theme})
+        return JsonResponse({'status': 'error', 'message': 'Invalid theme'}, status=400)
