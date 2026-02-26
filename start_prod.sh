@@ -16,13 +16,14 @@ echo "🎨 Collecting static files..."
 uv run python manage.py collectstatic --noinput
 
 # 3. Start Gunicorn
-# -w 4: 4 worker processes (adjust based on CPU cores, 2-4 x cores recommended)
-# -b 0.0.0.0:8000: Bind to all interfaces on port 8000
-# --access-logfile -: Log access to stdout
-# --error-logfile -: Log errors to stdout
-echo "🔥 Starting Gunicorn Server..."
+# -w 4: 4 worker processes
+# --threads 2: Each worker uses 2 threads (better concurrency)
+# --timeout 120: Avoid aggressive kills during local dev lag
+echo "🔥 Starting Gunicorn Server with Optimized Config..."
 exec uv run gunicorn AccountBooks.wsgi:application \
     --workers 4 \
+    --threads 8 \
+    --timeout 120 \
     --bind 0.0.0.0:8000 \
     --access-logfile - \
     --error-logfile -
