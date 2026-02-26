@@ -61,4 +61,4 @@ EXPOSE 8000
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 # 启动命令
-CMD ["gunicorn", "AccountBooks.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4", "--access-logfile", "-", "--error-logfile", "-"]
+CMD ["gunicorn", "AccountBooks.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "8", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]
