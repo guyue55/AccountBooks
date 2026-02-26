@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        {% block title %}AccountBooks{% endblock %}
+        {% block title %}账簿{% endblock %}
     </title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -51,7 +51,7 @@
         /* ===== 侧边栏 ===== */
         /* ===== 侧边栏 (Modern Redesign) ===== */
         .sidebar {
-            width: 260px;
+            width: 200px;
             background: var(--sidebar-bg);
             border-right: 1px solid var(--border-color);
             padding: 1.5rem 1rem;
@@ -292,7 +292,7 @@
         /* ===== 主内容区联动 ===== */
         .main-content {
             flex: 1;
-            margin-left: 260px;
+            margin-left: 200px;
             /* 默认留出侧边栏宽度 */
             padding: 2.5rem 3rem;
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -656,6 +656,16 @@
             font-size: 1.75rem;
             font-weight: 600;
             color: var(--text-main);
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 1rem;
+            text-align: center;
+            width: 100%;
         }
 
         table {
@@ -1154,7 +1164,7 @@
     <!-- ===== 侧边栏导航 ===== -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-logo">AccountBooks</div>
+            <div class="sidebar-logo">账簿管理</div>
             <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="折叠/展开导航">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">

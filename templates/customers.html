@@ -33,22 +33,12 @@
   </div>
 </form>
 
-<!-- 批量操作栏 -->
-<div id="batchActionBar"
-  style="display: none; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; margin-bottom: 1rem;">
-  <span style="color: var(--text-main); font-size: 0.95rem;">已选择 <span id="selectedCount"
-      style="font-weight: bold; color: var(--primary-color);">0</span> 项</span>
-  <div style="display: flex; gap: 10px;">
-    <button class="btn btn-danger" onclick="confirmBatchDelete()">批量删除</button>
-  </div>
-</div>
+<!-- 批量操作栏已移除 -->
 
 <div class="table-container">
   <table>
     <thead>
       <tr>
-        <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllCustomers"
-            style="accent-color: var(--primary-color); width: 16px; height: 16px; cursor: pointer;"></th>
         <th class="col-id">ID</th>
         <th>名称</th>
         <th>真实姓名</th>
@@ -63,8 +53,6 @@
     <tbody>
       {% for customer in customers %}
       <tr>
-        <td style="text-align: center;"><input type="checkbox" class="customer-checkbox" value="{{ customer.id }}"
-            style="accent-color: var(--primary-color); width: 16px; height: 16px; cursor: pointer;"></td>
         <td class="col-id" style="color: var(--text-dim);">{{ customer.id }}</td>
         <td style="font-weight: 500;">{{ customer.name }}</td>
         <td>{{ customer.real_name|default:"-" }}</td>

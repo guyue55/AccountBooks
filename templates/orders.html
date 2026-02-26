@@ -84,27 +84,12 @@
   </div>
 </form>
 
-<!-- 批量操作栏 -->
-<div id="batchActionBar"
-  style="display: none; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 8px; margin-bottom: 1rem;">
-  <span style="color: var(--text-main); font-size: 0.95rem;">已选择 <span id="selectedCount"
-      style="font-weight: bold; color: var(--primary-color);">0</span> 项</span>
-  <div style="display: flex; gap: 10px;">
-    <button class="btn btn-secondary"
-      style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green); border-color: rgba(16, 185, 129, 0.2);"
-      onclick="batchUpdateStatus('ok')">
-      批量标记已还
-    </button>
-    <button class="btn btn-danger" onclick="confirmBatchDelete()">批量删除</button>
-  </div>
-</div>
+<!-- 批量操作栏已移除 -->
 
 <div class="table-container">
   <table>
     <thead>
       <tr>
-        <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllOrders"
-            style="accent-color: var(--primary-color); width: 16px; height: 16px; cursor: pointer;"></th>
         <th class="col-id">ID</th>
         <th style="width: 100px;">顾客</th>
         <th>商品明细</th>
@@ -118,8 +103,6 @@
     <tbody>
       {% for order in orders %}
       <tr>
-        <td style="text-align: center;"><input type="checkbox" class="order-checkbox" value="{{ order.id }}"
-            style="accent-color: var(--primary-color); width: 16px; height: 16px; cursor: pointer;"></td>
         <td class="col-id" style="color: var(--text-dim);">{{ order.id }}</td>
         <td style="font-weight: 500;">{{ order.account.name }}</td>
         <td>
@@ -138,8 +121,8 @@
             <div class="text-truncate-container">
               {% for item in order.items.all %}
               <div style="font-size: 0.8125rem;
-                                color: var(--text-dim);
-                                line-height: 1.6">
+                                 color: var(--text-dim);
+                                 line-height: 1.6">
                 <span style="color: var(--text-main);">{{ item.goods.goods }}</span>
                 × {{ item.quantity }}
               </div>
@@ -168,7 +151,7 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="9">
+        <td colspan="8">
           <div class="empty-state">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
               stroke-linecap="round" stroke-linejoin="round"

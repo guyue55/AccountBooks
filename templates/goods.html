@@ -51,7 +51,13 @@
         <td class="col-id" style="color: var(--text-dim);">{{ goods.id }}</td>
         <td style="font-weight: 500;">{{ goods.goods }}</td>
         <td style="color: var(--accent-green); font-weight: 600;">¥ {{ goods.goods_price }}</td>
-        <td style="color: var(--text-dim);">{% if goods.purchase_price > 0 %}¥ {{ goods.purchase_price }}{% else %}-{% endif %}</td>
+        <td style="color: var(--text-dim);">
+          {% if goods.purchase_price > 0 %}
+          ¥ {{ goods.purchase_price }}
+          {% else %}
+          -
+          {% endif %}
+        </td>
         <td style="color: var(--text-dim); font-size: 0.875rem;">{{ goods.created|date:"Y-m-d H:i" }}</td>
         <td style="color: var(--text-dim); font-size: 0.875rem;">{{ goods.updated|date:"Y-m-d H:i" }}</td>
         <td>
@@ -67,7 +73,7 @@
       </tr>
       {% empty %}
       <tr>
-        <td colspan="6">
+        <td colspan="7">
           <div class="empty-state">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
               stroke-linecap="round" stroke-linejoin="round"
