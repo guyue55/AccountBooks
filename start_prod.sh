@@ -11,14 +11,18 @@ if ! command -v uv &> /dev/null; then
     exit 1
 fi
 
-# 2. Collect Static Files (Important for production!)
+# 2. Apply Database Migrations
+echo "🗄️ Applying database migrations..."
+uv run python manage.py migrate --noinput
+
+# 3. Collect Static Files (Important for production!)
 echo "🎨 Collecting static files..."
 uv run python manage.py collectstatic --noinput
 
-# 3. Start Gunicorn
-# -w 4: 4 worker processes
-# --threads 2: Each worker uses 2 threads (better concurrency)
-# --timeout 120: Avoid aggressive kills during local dev lag
+# 4. Start Gunicorn
+# -w 1: 1 个工作进程，提供基础的高可用和负载均衡
+# --threads 8: 每个进程 8 条线程，足以应对 50 人规模的并发 I/O
+# --timeout 120: 避免由于 SQLite 锁等待等导致的进程强杀
 echo "🔥 Starting Gunicorn Server with Optimized Config..."
 exec uv run gunicorn AccountBooks.wsgi:application \
     --workers 1 \

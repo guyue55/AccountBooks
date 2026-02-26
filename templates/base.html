@@ -33,12 +33,19 @@
             --accent-green: #10b981;
             --accent-red: #ef4444;
             --accent-orange: #f59e0b;
-            --bg-color: #0b0f1a;
+            --bg-color: #0b1222;
+            --bg-gradient-end: #0f172a;
             --sidebar-bg: rgba(15, 23, 42, 0.7);
             --card-bg: rgba(30, 41, 59, 0.4);
+            --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
             --border-color: rgba(255, 255, 255, 0.08);
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
+            --hover-bg: rgba(255, 255, 255, 0.05);
+            --item-bg: rgba(255, 255, 255, 0.03);
+            --autofill-bg: #111827;
+            --tooltip-bg: #1e293b;
+            --tooltip-text: #ffffff;
             --transition-speed: 0.3s;
             --ease-out: cubic-bezier(0.34, 1.56, 0.64, 1);
             --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
@@ -48,13 +55,20 @@
 
         /* 1. Vercel Light (极致简约) */
         [data-theme="light"] {
-            --bg-color: #f8fafc;
+            --bg-color: #fafafa;
+            --bg-gradient-end: #ffffff;
             --sidebar-bg: #ffffff;
             --card-bg: #ffffff;
-            --border-color: #e2e8f0;
-            --text-main: #0f172a;
-            --text-dim: #64748b;
-            --sidebar-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --border-color: #e5e7eb;
+            --text-main: #0a0a0a;
+            --text-dim: #737373;
+            --hover-bg: #f5f5f5;
+            --item-bg: #f9f9f9;
+            --autofill-bg: #f9f9f9;
+            --tooltip-bg: #000000;
+            --tooltip-text: #ffffff;
+            --sidebar-shadow: 0 0 1px rgba(0, 0, 0, 0.1), 0 0 15px rgba(0, 0, 0, 0.05);
         }
 
         /* 2. Nordic Frost (北欧冷色) */
@@ -67,6 +81,7 @@
             --text-dim: #d8dee9;
             --primary-color: #88c0d0;
             --primary-hover: #81a1c1;
+            --autofill-bg: #3b4252;
         }
 
         /* 3. Midnight Amethyst (深夜紫) */
@@ -78,6 +93,7 @@
             --text-main: #f3f4f6;
             --primary-color: #8b5cf6;
             --primary-hover: #7c3aed;
+            --autofill-bg: #1a1426;
         }
 
         /* 全局主题切换过渡效果 */
@@ -194,7 +210,7 @@
             color: var(--text-dim);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1001;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .sidebar-toggle-btn:hover {
@@ -233,7 +249,7 @@
         }
 
         .nav-link:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--hover-bg);
             color: var(--text-main);
         }
 
@@ -279,7 +295,7 @@
             transition: all 0.2s;
             cursor: pointer;
             position: relative;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--item-bg);
             border: 1px solid transparent;
             width: 100%;
             user-select: none;
@@ -287,7 +303,7 @@
         }
 
         .user-profile:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: var(--hover-bg);
             border-color: var(--border-color);
         }
 
@@ -499,8 +515,8 @@
             position: absolute;
             left: 100%;
             margin-left: 15px;
-            background: #1e293b;
-            color: white;
+            background: var(--tooltip-bg);
+            color: var(--tooltip-text);
             padding: 6px 10px;
             border-radius: 6px;
             font-size: 0.75rem;
@@ -527,7 +543,7 @@
             padding: 2.25rem 2.5rem;
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             min-height: 100vh;
-            background: linear-gradient(to bottom right, var(--bg-color), #0f172a);
+            background: linear-gradient(to bottom right, var(--bg-color), var(--bg-gradient-end));
             min-width: 0;
             /* 允许 Flex 子项收缩 */
             overflow-x: hidden;
@@ -607,17 +623,17 @@
         .btn-primary:hover {
             background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--item-bg);
             color: var(--text-main);
             border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--hover-bg);
         }
 
         .btn-danger {
@@ -637,6 +653,7 @@
             border: 1px solid var(--border-color);
             overflow: hidden;
             backdrop-filter: blur(10px);
+            box-shadow: var(--card-shadow);
             margin-top: 1rem;
 
             /* 响应式表格核心：允许容器横向滚动 */
@@ -700,16 +717,17 @@
         .filter-item {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--item-bg);
             border: 1px solid var(--border-color);
             border-radius: 0.75rem;
             transition: all var(--transition-speed);
-            backdrop-filter: blur(8px);
+            /* 关键：防止内部 input 的直角填充色刺破父级圆角 */
+            overflow: hidden;
         }
 
         .filter-item:focus-within {
             border-color: var(--primary-color);
-            background: rgba(255, 255, 255, 0.06);
+            background: var(--hover-bg);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
@@ -722,11 +740,14 @@
         .filter-item-input {
             background: none;
             border: none;
-            padding: 0.625rem 0.75rem;
+            /* 稍微减去右侧 padding 增加视觉缓冲 */
+            padding: 0.625rem 0.5rem 0.625rem 0.75rem;
             color: var(--text-main);
             font-size: 0.8125rem;
             outline: none;
             width: 100%;
+            border-radius: inherit;
+            /* 让 input 也尝试继承圆角 */
         }
 
         /* 搜索框宽度占比最高 */
@@ -741,11 +762,13 @@
         .filter-date-group {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--item-bg);
             border: 1px solid var(--border-color);
             border-radius: 0.75rem;
             padding: 0 0.5rem;
             gap: 2px;
+            /* 关键：裁剪日期选择器右侧的自动填充边角 */
+            overflow: hidden;
         }
 
         .filter-date-group i {
@@ -799,7 +822,7 @@
         }
 
         .btn-filter-reset-new {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--item-bg);
             color: var(--text-dim);
             border: 1px solid var(--border-color);
             height: 36px;
@@ -867,10 +890,10 @@
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus,
         input:-webkit-autofill:active {
-            -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
+            -webkit-box-shadow: 0 0 0 30px var(--autofill-bg) inset !important;
             -webkit-text-fill-color: var(--text-main) !important;
             caret-color: var(--text-main) !important;
-            /* 强制光标白色 */
+            /* 强制光标跟随文字颜色 */
             transition: background-color 5000s ease-in-out 0s;
         }
 
@@ -892,7 +915,7 @@
             padding: 1.5rem;
             border-radius: 1rem;
             border: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
+            box-shadow: var(--card-shadow);
             transition: transform var(--transition-speed);
         }
 
@@ -975,7 +998,7 @@
 
         th {
             padding: 1rem 1.5rem;
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--item-bg);
             color: var(--text-dim);
             font-weight: 500;
             font-size: 0.85rem;
