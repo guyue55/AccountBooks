@@ -1552,20 +1552,25 @@
                 </div>
                 <div class="dropdown-divider"></div>
                 <div style="padding: 10px 12px;">
-                    <span
-                        style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">系统主题</span>
+                    <span style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">
+                        系统主题 <span id="theme-name-tip"
+                            style="color: var(--primary-color); margin-left: 4px; font-weight: 600; transition: opacity 0.2s;"></span>
+                    </span>
                     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; justify-items: center;">
                         <div class="theme-dot {% if user_theme == 'dark' or not user_theme %}active{% endif %}"
-                            onclick="switchTheme('dark', event)" style="background: #0b1f1a;" title="Linear Dark"></div>
+                            onclick="switchTheme('dark', event)" onmouseenter="showThemeTip('Linear Dark')"
+                            onmouseleave="hideThemeTip()" style="background: #0b1f1a;" title="Linear Dark"></div>
                         <div class="theme-dot {% if user_theme == 'light' %}active{% endif %}"
-                            onclick="switchTheme('light', event)" style="background: #ffffff; border: 1px solid #ddd;"
+                            onclick="switchTheme('light', event)" onmouseenter="showThemeTip('Vercel Light')"
+                            onmouseleave="hideThemeTip()" style="background: #ffffff; border: 1px solid #ddd;"
                             title="Vercel Light"></div>
                         <div class="theme-dot {% if user_theme == 'nord' %}active{% endif %}"
-                            onclick="switchTheme('nord', event)" style="background: #2e3440;" title="Nordic Frost">
+                            onclick="switchTheme('nord', event)" onmouseenter="showThemeTip('Nordic Frost')"
+                            onmouseleave="hideThemeTip()" style="background: #2e3440;" title="Nordic Frost">
                         </div>
                         <div class="theme-dot {% if user_theme == 'purple' %}active{% endif %}"
-                            onclick="switchTheme('purple', event)" style="background: #8b5cf6;"
-                            title="Midnight Amethyst">
+                            onclick="switchTheme('purple', event)" onmouseenter="showThemeTip('Midnight Amethyst')"
+                            onmouseleave="hideThemeTip()" style="background: #8b5cf6;" title="Midnight Amethyst">
                         </div>
                     </div>
                 </div>
@@ -2014,14 +2019,25 @@
         });
 
         // 4. 主题切换逻辑与启动同步
+        const THEME_NAMES = {
+            'dark': 'Linear Dark',
+            'light': 'Vercel Light',
+            'nord': 'Nordic Frost',
+            'purple': 'Midnight Amethyst'
+        };
+
         function updateThemeDots(theme) {
             document.querySelectorAll('.theme-dot').forEach(dot => {
                 dot.classList.remove('active');
-                // 通过 onclick 字符串简单匹配，或者自定义 data-theme 属性（更稳妥）
                 if (dot.getAttribute('onclick').includes(`'${theme}'`)) {
                     dot.classList.add('active');
                 }
             });
+            // 更新默认显示的名称
+            const tip = document.getElementById('theme-name-tip');
+            if (tip) {
+                tip.textContent = `· ${THEME_NAMES[theme] || theme}`;
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -2060,6 +2076,23 @@
                 .catch(err => {
                     console.error('Theme switch failed:', err);
                 });
+        }
+
+        // 主题悬停文字提示
+        function showThemeTip(name) {
+            const tip = document.getElementById('theme-name-tip');
+            if (tip) {
+                tip.textContent = `· ${name}`;
+                tip.style.opacity = '1';
+            }
+        }
+        function hideThemeTip() {
+            // 鼠标移开时，恢复显示当前正在应用的主题名称
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const tip = document.getElementById('theme-name-tip');
+            if (tip) {
+                tip.textContent = `· ${THEME_NAMES[currentTheme] || currentTheme}`;
+            }
         }
     </script>
 </body>
