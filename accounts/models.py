@@ -18,7 +18,41 @@ from django.dispatch import receiver
 from django.utils import timezone
 
 
-class AccountInfo(models.Model):
+class SoftDeleteQuerySet(models.QuerySet):
+    def delete(self):
+        """批量执行逻辑删除，返回与 Django 原生 delete() 相同格式的 (count, dict) 元组。"""
+        count = self.count()
+        self.update(is_deleted=True, deleted_at=timezone.now())
+        # 返回 (数量, {model_label: 数量}) 以兼容需要解包的调用方
+        model_label = f"{self.model._meta.app_label}.{self.model.__name__}"
+        return count, {model_label: count}
+
+
+class SoftDeleteManager(models.Manager):
+    def get_queryset(self):
+        """默认只查询未删除的数据。"""
+        return SoftDeleteQuerySet(self.model, using=self._db).filter(is_deleted=False)
+
+
+class SoftDeleteModel(models.Model):
+    """逻辑删除基类。"""
+    is_deleted = models.BooleanField(default=False, verbose_name='已删除')
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name='删除时间')
+
+    objects = SoftDeleteManager()  # 默认管理器：只返回未删除
+    all_objects = models.Manager() # 包含已删除的源生管理器
+
+    class Meta:
+        abstract = True
+
+    def delete(self, using=None, keep_parents=False):
+        """执行逻辑删除而非物理删除。"""
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save(update_fields=['is_deleted', 'deleted_at'])
+
+
+class AccountInfo(SoftDeleteModel):
     """记录债务人的详细个人信息及关联。
 
     Attributes:
@@ -50,7 +84,7 @@ class AccountInfo(models.Model):
         ordering = ['name']
 
 
-class GoodsInfo(models.Model):
+class GoodsInfo(SoftDeleteModel):
     """记录商品及其单价信息。
 
     Attributes:
@@ -59,7 +93,7 @@ class GoodsInfo(models.Model):
         created: 创建时间。
         updated: 更新时间。
     """
-    goods = models.CharField(max_length=50, verbose_name='商品名称', default="其它", unique=True)
+    goods = models.CharField(max_length=50, verbose_name='商品名称', default="其它")
     goods_price = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.00, verbose_name='单价（元）'
     )
@@ -78,9 +112,18 @@ class GoodsInfo(models.Model):
         verbose_name_plural = '商品信息列表'
         db_table = 'goods_info'
         ordering = ['goods']
+        constraints = [
+            # 仅对未删除的商品施加名称唯一约束
+            # 允许"重名"的已软删除商品继续留存，不阻塞重建同名商品
+            models.UniqueConstraint(
+                fields=['goods'],
+                condition=models.Q(is_deleted=False),
+                name='unique_active_goods_name'
+            )
+        ]
 
 
-class Order(models.Model):
+class Order(SoftDeleteModel):
     """记录具体的交易订单头信息。
 
     订单的商品明细通过 OrderItem 关联管理，每个商品可独立设置数量。
@@ -118,8 +161,8 @@ class Order(models.Model):
 
     def calc_total(self):
         """根据关联的 OrderItem 重新计算应收总价并保存。
-
-        遍历所有行项的 subtotal 求和写入 total_price 字段。
+        
+        注意：因为 OrderItem 已启用逻辑删除，.items.all() 会自动过滤掉已删除项。
         """
         total = self.items.aggregate(total=Sum('subtotal'))['total'] or Decimal('0.00')
         self.total_price = total
@@ -137,7 +180,7 @@ class Order(models.Model):
         ordering = ['-buy_time']
 
 
-class OrderItem(models.Model):
+class OrderItem(SoftDeleteModel):
     """订单行项 —— 记录每个商品在订单中的独立数量和小计。
 
     通过 through 中间表替代之前 Order.goods 的 ManyToMany + 单一 goods_number 的设计，
@@ -165,10 +208,7 @@ class OrderItem(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        """保存前自动计算小计金额。
-
-        如果 unit_price 未手动设置（为 0），则从关联商品取当前单价。
-        """
+        """保存前自动计算小计金额。"""
         if self.unit_price == Decimal('0.00') and self.goods_id:
             self.unit_price = self.goods.goods_price
         self.subtotal = self.unit_price * self.quantity
@@ -184,7 +224,7 @@ class OrderItem(models.Model):
         db_table = 'order_items'
 
 
-class AccountBooks(models.Model):
+class AccountBooks(SoftDeleteModel):
     """记录每个债务人的账务汇总。
 
     Attributes:
@@ -214,8 +254,8 @@ class AccountBooks(models.Model):
 
     def update_summary(self):
         """根据关联的所有订单重新计算账务汇总。
-
-        使用数据库聚合函数替代 Python 循环，以提升性能。
+        
+        注意：因为 Order 已启用逻辑删除，默认只统计未删除的订单。
         """
         orders = Order.objects.filter(account=self.account_info)
         

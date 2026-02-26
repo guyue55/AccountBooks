@@ -509,19 +509,25 @@ class GoodsDeleteView(LoginRequiredMixin, DeleteView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        
+        # 手动检查商品是否被非软删除的 OrderItem 引用
+        if OrderItem.objects.filter(goods=self.object).exists():
+            logger.warning(f"User {request.user} failed to delete Goods {self.object.pk}: Linked to active OrderItems")
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': '该商品已被订单引用，无法直接删除（请先删除对应订单）。'
+                }, status=400)
+
         try:
-            logger.info(f"User {request.user} deleted Goods {self.object.pk}")
+            logger.info(f"User {request.user} soft-deleted Goods {self.object.pk}")
             self.object.delete()
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'message': '商品已删除'})
         except Exception as e:
-            logger.warning(f"User {request.user} failed to delete Goods {self.object.pk}: {str(e)}")
-            # 商品被 OrderItem 引用时无法删除 (PROTECT)
+            logger.error(f"User {request.user} failed to soft-delete Goods {self.object.pk}: {str(e)}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False,
-                    'message': '该商品已被订单引用，无法删除'
-                }, status=400)
+                return JsonResponse({'success': False, 'message': f'删除失败: {str(e)}'}, status=500)
         return redirect(self.success_url)
 
     def get(self, request, *args, **kwargs):
@@ -605,18 +611,25 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+
+        # 手动检查该顾客是否有关联的活动（未软删除）订单
+        if Order.objects.filter(account=self.object).exists():
+            logger.warning(f"User {request.user} failed to delete Customer {self.object.pk}: Linked to active Orders")
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': '该顾客有关联订单，无法直接删除（请先删除关联订单）。'
+                }, status=400)
+
         try:
-            logger.info(f"User {request.user} deleted Customer {self.object.pk}")
+            logger.info(f"User {request.user} soft-deleted Customer {self.object.pk}")
             self.object.delete()
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'message': '顾客已删除'})
         except Exception as e:
-            logger.warning(f"User {request.user} failed to delete Customer {self.object.pk}: {str(e)}")
+            logger.error(f"User {request.user} failed to soft-delete Customer {self.object.pk}: {str(e)}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False,
-                    'message': '该顾客有关联订单，无法删除'
-                }, status=400)
+                return JsonResponse({'success': False, 'message': f'删除失败: {str(e)}'}, status=500)
         return redirect(self.success_url)
 
     def get(self, request, *args, **kwargs):
@@ -743,23 +756,32 @@ class OrderBatchStatusView(LoginRequiredMixin, View):
             return JsonResponse({'success': False, 'message': f'批量更新失败: {str(e)}'}, status=500)
 
 class CustomerBatchDeleteView(LoginRequiredMixin, View):
-    """批量删除顾客记录"""
+    """批量软删除顾客记录。"""
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
             ids = data.get('ids', [])
             if not ids:
                 return JsonResponse({'success': False, 'message': '未选择任何记录'}, status=400)
-            
-            # 使用原生 delete() 可能会触发 PROTECT，捕获之
-            from django.db.models import ProtectedError
-            try:
-                deleted_count, _ = AccountInfo.objects.filter(id__in=ids).delete()
-                logger.info(f"User {request.user} batch deleted {deleted_count} Customers")
-                return JsonResponse({'success': True, 'message': f'成功删除 {deleted_count} 名顾客'})
-            except ProtectedError:
-                logger.warning(f"User {request.user} failed to batch delete Customers due to ProtectedError")
-                return JsonResponse({'success': False, 'message': '部分顾客存在关联订单，无法直接删除'}, status=400)
+
+            # 手动检查是否有顾客还关联着未删除的订单
+            # （逻辑删除不触发数据库 ProtectedError，需在代码层自行拦截）
+            blocked = AccountInfo.objects.filter(
+                id__in=ids, order__is_deleted=False
+            ).distinct()
+            if blocked.exists():
+                names = '、'.join(blocked.values_list('name', flat=True))
+                logger.warning(
+                    f"User {request.user} tried to delete Customers with active orders: {names}"
+                )
+                return JsonResponse(
+                    {'success': False, 'message': f'以下顾客存在未删除的关联订单，无法直接删除：{names}'},
+                    status=400
+                )
+
+            deleted_count, _ = AccountInfo.objects.filter(id__in=ids).delete()
+            logger.info(f"User {request.user} batch soft-deleted {deleted_count} Customers")
+            return JsonResponse({'success': True, 'message': f'成功删除 {deleted_count} 名顾客'})
         except Exception as e:
             logger.error(f"User {request.user} batch delete Customers failed: {str(e)}")
             return JsonResponse({'success': False, 'message': f'批量删除失败: {str(e)}'}, status=500)
