@@ -5,11 +5,17 @@
 
 <head>
     <script>
-        // 在任何内容渲染前，优先尝试从内存或本地缓存恢复主题，防止白屏闪烁
+        // 在任何内容渲染前，优先尝试从内存或本地缓存恢复设置，防止白屏或布局抖动
         (function () {
+            // 1. 主题恢复
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
                 document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+            // 2. 侧边栏状态预设
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.documentElement.classList.add('sidebar-is-collapsed');
             }
         })();
     </script>
@@ -530,6 +536,26 @@
 
         .sidebar.collapsed~.main-content {
             margin-left: 72px;
+        }
+
+        /* 初始状态补偿：解决 CSS 加载瞬间的抖动 */
+        .sidebar-is-collapsed .sidebar {
+            width: 72px;
+        }
+
+        .sidebar-is-collapsed .main-content {
+            margin-left: 72px;
+        }
+
+        .sidebar-is-collapsed .sidebar .sidebar-logo,
+        .sidebar-is-collapsed .sidebar .nav-text,
+        .sidebar-is-collapsed .sidebar .user-info {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
         }
 
         /* ===== 通用组件样式 (Table, Card, Btn) ===== */
@@ -1604,6 +1630,13 @@
             const isCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('sidebarCollapsed', isCollapsed);
 
+            // 同步更新 html 类，确保状态在当前页及下次加载时完全一致
+            if (isCollapsed) {
+                document.documentElement.classList.add('sidebar-is-collapsed');
+            } else {
+                document.documentElement.classList.remove('sidebar-is-collapsed');
+            }
+
             // 如果侧边栏收缩，自动关闭可能打开的用户菜单
             if (isCollapsed) {
                 closeUserDropdown();
@@ -1661,14 +1694,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             const sidebar = document.getElementById('sidebar');
-            if (isCollapsed) {
+            if (isCollapsed && sidebar) {
                 sidebar.classList.add('collapsed');
             }
 
             // Remove preload class to enable transitions
-            setTimeout(() => {
-                document.body.classList.remove('preload');
-            }, 100);
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    document.body.classList.remove('preload');
+                }, 50);
+            });
         });
 
         function getCsrfToken() {
