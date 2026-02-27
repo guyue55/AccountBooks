@@ -13,9 +13,15 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # 1. 复制依赖描述文件
 COPY requirements.txt .
 
-# 2. 合并安装与清理操作（减少镜像层）
-# --no-cache-dir: 防止 pip 缓存下载的包，直接解压安装
-RUN pip install --no-cache-dir -r requirements.txt
+# 2. 安装依赖并立即清理冗余文件
+RUN pip install --no-cache-dir -r requirements.txt \
+    && find /usr/local/lib/python3.12 -name '__pycache__' -exec rm -rf {} + \
+    && find /usr/local/lib/python3.12 -name 'tests' -exec rm -rf {} + \
+    && find /usr/local/lib/python3.12 -name 'test' -exec rm -rf {} + \
+    && rm -rf /usr/local/lib/python3.12/ensurepip \
+    && rm -rf /usr/local/lib/python3.12/idlelib \
+    && rm -rf /usr/local/lib/python3.12/pydoc.py \
+    && rm -rf /usr/local/lib/python3.12/turtle.py
 
 # 3. 复制项目代码 (利用 .dockerignore 排除不必要的文件)
 COPY . .
