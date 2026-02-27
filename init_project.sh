@@ -17,6 +17,7 @@ uv sync
 
 # 3. Apply migrations
 echo "🗄️  Applying database migrations..."
+uv run python manage.py makemigrations accounts
 uv run python manage.py migrate
 
 echo "🎨 Collecting static files..."
