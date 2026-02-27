@@ -84,6 +84,11 @@ class LoginView(TemplateView):
     """登录页面视图。"""
     template_name = "login-meihua.html"
 
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect('index')
+        return super().get(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         """处理登录表单提交。"""
         username = request.POST.get('username')
