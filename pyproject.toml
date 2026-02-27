@@ -31,6 +31,12 @@ dependencies = [
     "whitenoise>=6.6.0",
 ]
 
+[dependency-groups]
+dev = [
+    "playwright>=1.58.0",
+    "ruff>=0.15.4",
+]
+
 [tool.djlint]
 # 检查格式命令: uv run djlint . --check
 # 自动修复格式命令（安全模式）: uv run djlint . --reformat

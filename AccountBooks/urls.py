@@ -1,4 +1,4 @@
-"""AccountBooks URL Configuration
+"""AccountBooks URL Configuration.
 
 路由配置模块，包含以下功能组：
 - 认证：登录 / 注册 / 退出
@@ -11,13 +11,12 @@
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
     # ----- 管理后台 -----
-    path('admin/', admin.site.urls),
-
+    path("admin/", admin.site.urls),
     # ----- 业务路由 (包含 Dashboard, Auth, CRUD) -----
     # 直接包含 accounts.urls，不加前缀，保持原有 URL 结构不变
-    path('', include('accounts.urls')),
+    path("", include("accounts.urls")),
 ]

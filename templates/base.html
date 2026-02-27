@@ -2,11 +2,10 @@
 
 <!DOCTYPE html>
 <html lang="zh-hans" data-theme="{{ user_theme|default:'dark' }}">
-
-<head>
+  <head>
     <script>
         // 在任何内容渲染前，优先尝试从内存或本地缓存恢复设置，防止白屏或布局抖动
-        (function () {
+        (function() {
             // 1. 主题恢复
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
@@ -22,9 +21,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        {% block title %}账簿{% endblock %}
+      {% block title %}账簿{% endblock %}
     </title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap"
+          rel="stylesheet">
     <style>
         /* ===== 全局 CSS 变量 ===== */
         :root {
@@ -1522,108 +1522,148 @@
         }
     </style>
     {% block extra_css %}{% endblock %}
-</head>
-
-<body class="preload">
+  </head>
+  <body class="preload">
     <div id="top-progress-bar"></div>
     <!-- ===== 侧边栏导航 ===== -->
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">账簿管理</div>
-        </div>
-        <!-- 侧边栏折叠按钮 (行业最佳实践：置于边缘中位或顶部边缘) -->
-        <button class="sidebar-toggle-btn" onclick="toggleSidebar()" title="折叠/展开导航" id="sidebarToggle">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        </button>
-        <nav>
-            <a href="{% url 'index' %}" class="nav-link {% if active_nav == 'dashboard' %}active{% endif %}" title="概览">
-                <span class="nav-icon">📊</span>
-                <span class="nav-text">概览</span>
-            </a>
-            <a href="{% url 'orders' %}" class="nav-link {% if active_nav == 'orders' %}active{% endif %}" title="交易记录">
-                <span class="nav-icon">📋</span>
-                <span class="nav-text">交易记录</span>
-            </a>
-            <a href="{% url 'goods_list' %}" class="nav-link {% if active_nav == 'goods' %}active{% endif %}"
-                title="商品管理">
-                <span class="nav-icon">📦</span>
-                <span class="nav-text">商品管理</span>
-            </a>
-            <a href="{% url 'customer_list' %}" class="nav-link {% if active_nav == 'customers' %}active{% endif %}"
-                title="顾客管理">
-                <span class="nav-icon">👤</span>
-                <span class="nav-text">顾客管理</span>
-            </a>
-            <a href="/admin" class="nav-link" target="_blank" title="后台管理">
-                <span class="nav-icon">⚙️</span>
-                <span class="nav-text">后台管理</span>
-            </a>
-        </nav>
-        <div class="sidebar-footer">
-            <!-- 用户下拉菜单 -->
-            <div class="user-dropdown" id="userDropdown">
-                <div style="padding: 10px 12px; margin-bottom: 4px;">
-                    <span
-                        style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 2px;">当前登录</span>
-                    <span
-                        style="display: block; font-size: 0.875rem; font-weight: 600; color: var(--text-main); overflow: hidden; text-overflow: ellipsis;">
-                        {{ user.username }}
-                    </span>
-                </div>
-                <div class="dropdown-divider"></div>
-                <div style="padding: 10px 12px;">
-                    <span style="display: block; font-size: 0.75rem; color: var(--text-dim); margin-bottom: 8px;">
-                        系统主题 <span id="theme-name-tip"
-                            style="color: var(--primary-color); margin-left: 4px; font-weight: 600; transition: opacity 0.2s;"></span>
-                    </span>
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; justify-items: center;">
-                        <div class="theme-dot {% if user_theme == 'dark' or not user_theme %}active{% endif %}"
-                            onclick="switchTheme('dark', event)" onmouseenter="showThemeTip('Linear Dark')"
-                            onmouseleave="hideThemeTip()" style="background: #0b1f1a;" title="Linear Dark"></div>
-                        <div class="theme-dot {% if user_theme == 'light' %}active{% endif %}"
-                            onclick="switchTheme('light', event)" onmouseenter="showThemeTip('Vercel Light')"
-                            onmouseleave="hideThemeTip()" style="background: #ffffff; border: 1px solid #ddd;"
-                            title="Vercel Light"></div>
-                        <div class="theme-dot {% if user_theme == 'nord' %}active{% endif %}"
-                            onclick="switchTheme('nord', event)" onmouseenter="showThemeTip('Nordic Frost')"
-                            onmouseleave="hideThemeTip()" style="background: #2e3440;" title="Nordic Frost">
-                        </div>
-                        <div class="theme-dot {% if user_theme == 'purple' %}active{% endif %}"
-                            onclick="switchTheme('purple', event)" onmouseenter="showThemeTip('Midnight Amethyst')"
-                            onmouseleave="hideThemeTip()" style="background: #8b5cf6;" title="Midnight Amethyst">
-                        </div>
-                    </div>
-                </div>
-                <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" class="dropdown-item">
-                    <span class="dropdown-icon">👤</span>
-                    <span>个人中心</span>
-                </a>
-                <a href="/admin" target="_blank" class="dropdown-item">
-                    <span class="dropdown-icon">⚙️</span>
-                    <span>系统设置</span>
-                </a>
-                <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" onclick="confirmLogout('{% url 'logout' %}')" class="dropdown-item danger">
-                    <span class="dropdown-icon">🚪</span>
-                    <span>退出登录</span>
-                </a>
+      <div class="sidebar-header">
+        <div class="sidebar-logo">账簿管理</div>
+      </div>
+      <!-- 侧边栏折叠按钮 (行业最佳实践：置于边缘中位或顶部边缘) -->
+      <button class="sidebar-toggle-btn"
+              onclick="toggleSidebar()"
+              title="折叠/展开导航"
+              id="sidebarToggle">
+        <svg width="14"
+             height="14"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="3"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <nav>
+        <a href="{% url 'index' %}"
+           class="nav-link {% if active_nav == 'dashboard' %}active{% endif %}"
+           title="概览">
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">概览</span>
+        </a>
+        <a href="{% url 'orders' %}"
+           class="nav-link {% if active_nav == 'orders' %}active{% endif %}"
+           title="交易记录">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">交易记录</span>
+        </a>
+        <a href="{% url 'goods_list' %}"
+           class="nav-link {% if active_nav == 'goods' %}active{% endif %}"
+           title="商品管理">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">商品管理</span>
+        </a>
+        <a href="{% url 'customer_list' %}"
+           class="nav-link {% if active_nav == 'customers' %}active{% endif %}"
+           title="顾客管理">
+          <span class="nav-icon">👤</span>
+          <span class="nav-text">顾客管理</span>
+        </a>
+        <a href="/admin" class="nav-link" target="_blank" title="后台管理">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">后台管理</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <!-- 用户下拉菜单 -->
+        <div class="user-dropdown" id="userDropdown">
+          <div style="padding: 10px 12px; margin-bottom: 4px;">
+            <span style="display: block;
+                         font-size: 0.75rem;
+                         color: var(--text-dim);
+                         margin-bottom: 2px">当前登录</span>
+            <span style="display: block;
+                         font-size: 0.875rem;
+                         font-weight: 600;
+                         color: var(--text-main);
+                         overflow: hidden;
+                         text-overflow: ellipsis">{{ user.username }}</span>
+          </div>
+          <div class="dropdown-divider"></div>
+          <div style="padding: 10px 12px;">
+            <span style="display: block;
+                         font-size: 0.75rem;
+                         color: var(--text-dim);
+                         margin-bottom: 8px">
+              系统主题 <span id="theme-name-tip"
+       style="color: var(--primary-color);
+              margin-left: 4px;
+              font-weight: 600;
+              transition: opacity 0.2s"></span>
+            </span>
+            <div style="display: grid;
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: 6px;
+                        justify-items: center">
+              <div class="theme-dot {% if user_theme == 'dark' or not user_theme %}active{% endif %}"
+                   onclick="switchTheme('dark', event)"
+                   onmouseenter="showThemeTip('Linear Dark')"
+                   onmouseleave="hideThemeTip()"
+                   style="background: #0b1f1a"
+                   title="Linear Dark"></div>
+              <div class="theme-dot {% if user_theme == 'light' %}active{% endif %}"
+                   onclick="switchTheme('light', event)"
+                   onmouseenter="showThemeTip('Vercel Light')"
+                   onmouseleave="hideThemeTip()"
+                   style="background: #ffffff;
+                          border: 1px solid #ddd"
+                   title="Vercel Light"></div>
+              <div class="theme-dot {% if user_theme == 'nord' %}active{% endif %}"
+                   onclick="switchTheme('nord', event)"
+                   onmouseenter="showThemeTip('Nordic Frost')"
+                   onmouseleave="hideThemeTip()"
+                   style="background: #2e3440"
+                   title="Nordic Frost"></div>
+              <div class="theme-dot {% if user_theme == 'purple' %}active{% endif %}"
+                   onclick="switchTheme('purple', event)"
+                   onmouseenter="showThemeTip('Midnight Amethyst')"
+                   onmouseleave="hideThemeTip()"
+                   style="background: #8b5cf6"
+                   title="Midnight Amethyst"></div>
             </div>
-
-            <div class="user-profile" id="userProfile" onclick="toggleUserDropdown(event)">
-                <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
-                <div class="user-info">
-                    <span class="user-name">{{ user.username }}</span>
-                </div>
-            </div>
+          </div>
+          <div class="dropdown-divider"></div>
+          <a href="javascript:void(0)" class="dropdown-item">
+            <span class="dropdown-icon">👤</span>
+            <span>个人中心</span>
+          </a>
+          <a href="/admin" target="_blank" class="dropdown-item">
+            <span class="dropdown-icon">⚙️</span>
+            <span>系统设置</span>
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="javascript:void(0)"
+             onclick="confirmLogout('{% url 'logout' %}')"
+             class="dropdown-item danger">
+            <span class="dropdown-icon">🚪</span>
+            <span>退出登录</span>
+          </a>
         </div>
+        <div class="user-profile"
+             id="userProfile"
+             onclick="toggleUserDropdown(event)">
+          <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+          <div class="user-info">
+            <span class="user-name">{{ user.username }}</span>
+          </div>
+        </div>
+      </div>
     </div>
     <script>
         // Immediately apply sidebar state to avoid FOUC
-        (function () {
+        (function() {
             const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
             if (isCollapsed) {
                 document.getElementById('sidebar').classList.add('collapsed');
@@ -1638,15 +1678,16 @@
     </script>
     <!-- ===== 主内容区 ===== -->
     <div class="main-content">
-        {% block content %}{% endblock %}
+      {% block content %}
+      {% endblock %}
     </div>
     <!-- ===== Modal 弹窗容器 ===== -->
     <div class="modal-overlay" id="modalOverlay">
-        <div class="modal-container" id="modalContainer"></div>
+      <div class="modal-container" id="modalContainer"></div>
     </div>
     <!-- ===== 第二层 Modal（关联项快速新增） ===== -->
     <div class="modal-overlay" id="modalOverlay2" style="z-index: 1100;">
-        <div class="modal-container" id="modalContainer2"></div>
+      <div class="modal-container" id="modalContainer2"></div>
     </div>
     <div class="toast-container" id="toastContainer"></div>
     <script>
@@ -1708,7 +1749,7 @@
         }
 
         // 点击页面其他地方关闭下拉菜单
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('userDropdown');
             if (dropdown && dropdown.classList.contains('show')) {
                 const profile = document.getElementById('userProfile');
@@ -1756,10 +1797,10 @@
             const overlay = document.getElementById(overlayId);
 
             fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                 .then(r => r.text())
                 .then(html => {
                     container.innerHTML = html;
@@ -1878,12 +1919,12 @@
             }
 
             fetch(url, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCsrfToken(),
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
                 .then(r => {
                     if (r.ok) {
                         return r.json().then(data => {
@@ -1938,7 +1979,7 @@
             if (!title) {
                 title = type === 'success' ? '操作成功' :
                     type === 'error' ? '发生错误' :
-                        type === 'warning' ? '提醒' : '通知';
+                    type === 'warning' ? '提醒' : '通知';
             }
 
             const icons = {
@@ -1981,36 +2022,32 @@
             startTimer();
         }
 
-        document.getElementById('modalOverlay').onclick = function (e) {
+        document.getElementById('modalOverlay').onclick = function(e) {
             if (e.target === this) closeModal(1);
         };
-        document.getElementById('modalOverlay2').onclick = function (e) {
+        document.getElementById('modalOverlay2').onclick = function(e) {
             if (e.target === this) closeModal(2);
         };
     </script>
     {% block extra_js %}
     {% endblock %}
-
     {% if messages %}
-    <div id="django-messages-container" style="display: none;">
-        {% for message in messages %}
-        <span class="django-msg" data-tags="{{ message.tags }}">{{ message }}</span>
-        {% endfor %}
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('#django-messages-container .django-msg').forEach(msg => {
-                const tags = msg.dataset.tags || '';
-                let type = 'success';
-                if (tags.includes('error')) type = 'error';
-                else if (tags.includes('warning')) type = 'warning';
-                else if (tags.includes('info')) type = 'info';
-                showToast(msg.textContent.trim(), type);
-            });
-        });
-    </script>
+      <div id="django-messages-container" style="display: none;">
+        {% for message in messages %}<span class="django-msg" data-tags="{{ message.tags }}">{{ message }}</span>{% endfor %}
+      </div>
+      <script>
+          document.addEventListener('DOMContentLoaded', () => {
+              document.querySelectorAll('#django-messages-container .django-msg').forEach(msg => {
+                  const tags = msg.dataset.tags || '';
+                  let type = 'success';
+                  if (tags.includes('error')) type = 'error';
+                  else if (tags.includes('warning')) type = 'warning';
+                  else if (tags.includes('info')) type = 'info';
+                  showToast(msg.textContent.trim(), type);
+              });
+          });
+      </script>
     {% endif %}
-
     <script>
         // ===== 丝滑增强逻辑 (始终加载) =====
 
@@ -2019,7 +2056,9 @@
             const bar = document.getElementById('top-progress-bar');
             if (bar) {
                 bar.style.width = '30%';
-                setTimeout(() => { bar.style.width = '70%'; }, 200);
+                setTimeout(() => {
+                    bar.style.width = '70%';
+                }, 200);
             }
         });
 
@@ -2087,9 +2126,9 @@
             formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
             fetch('{% url "switch_theme" %}', {
-                method: 'POST',
-                body: formData
-            })
+                    method: 'POST',
+                    body: formData
+                })
                 .then(r => r.json())
                 .then(data => {
                     if (data.status === 'ok') {
@@ -2109,6 +2148,7 @@
                 tip.style.opacity = '1';
             }
         }
+
         function hideThemeTip() {
             // 鼠标移开时，恢复显示当前正在应用的主题名称
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -2118,6 +2158,5 @@
             }
         }
     </script>
-</body>
-
+  </body>
 </html>

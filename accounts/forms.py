@@ -1,5 +1,4 @@
-"""
-AccountBooks 表单模块。
+"""AccountBooks 表单模块。.
 
 提供三组核心业务表单：
 - GoodsInfoForm: 商品新增/编辑
@@ -13,85 +12,103 @@ AccountBooks 表单模块。
 from django import forms
 from django.forms import inlineformset_factory
 
-from .models import Order, OrderItem, AccountInfo, GoodsInfo
+from .models import AccountInfo, GoodsInfo, Order, OrderItem
 
 
 class GoodsInfoForm(forms.ModelForm):
-    """商品信息表单 —— 商品新增/编辑复用。"""
+    """商品信息表单 —— 商品新增/编辑复用。."""
 
     class Meta:
         model = GoodsInfo
-        fields = ['goods', 'goods_price', 'purchase_price']
+        fields = ["goods", "goods_price", "purchase_price"]
         widgets = {
-            'goods': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': '请输入商品名称',
-            }),
-            'goods_price': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': '0.00',
-                'step': '0.01',
-                'min': '0',
-            }),
-            'purchase_price': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': '0.00 (选填)',
-                'step': '0.01',
-                'min': '0',
-            }),
+            "goods": forms.TextInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "请输入商品名称",
+                }
+            ),
+            "goods_price": forms.NumberInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "0.00",
+                    "step": "0.01",
+                    "min": "0",
+                }
+            ),
+            "purchase_price": forms.NumberInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "0.00 (选填)",
+                    "step": "0.01",
+                    "min": "0",
+                }
+            ),
         }
 
     def clean_goods(self):
-        """校验商品名称唯一性。"""
-        goods_name = self.cleaned_data.get('goods')
+        """校验商品名称唯一性。."""
+        goods_name = self.cleaned_data.get("goods")
         # 如果是编辑现有商品，排除自身
         exists = GoodsInfo.objects.filter(goods=goods_name)
         if self.instance and self.instance.pk:
             exists = exists.exclude(pk=self.instance.pk)
-        
+
         if exists.exists():
             raise forms.ValidationError("该商品名称已存在，请勿重复创建。")
         return goods_name
 
 
 class AccountInfoForm(forms.ModelForm):
-    """顾客信息表单 —— 顾客新增/编辑复用。"""
+    """顾客信息表单 —— 顾客新增/编辑复用。."""
 
     class Meta:
         model = AccountInfo
-        fields = ['name', 'real_name', 'phone', 'age', 'location', 'remarks']
+        fields = ["name", "real_name", "phone", "age", "location", "remarks"]
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': '请输入名称',
-            }),
-            'real_name': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': '请输入真实姓名 (选填)',
-            }),
-            'phone': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': '请输入联系电话 (选填)',
-            }),
-            'age': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': '0 (选填)',
-                'min': '0',
-            }),
-            'location': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': '请输入地址 (选填)',
-            }),
-            'remarks': forms.Textarea(attrs={
-                'class': 'form-input',
-                'placeholder': '选填备注信息',
-                'rows': 3,
-            }),
+            "name": forms.TextInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "请输入名称",
+                }
+            ),
+            "real_name": forms.TextInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "请输入真实姓名 (选填)",
+                }
+            ),
+            "phone": forms.TextInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "请输入联系电话 (选填)",
+                }
+            ),
+            "age": forms.NumberInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "0 (选填)",
+                    "min": "0",
+                }
+            ),
+            "location": forms.TextInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "请输入地址 (选填)",
+                }
+            ),
+            "remarks": forms.Textarea(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "选填备注信息",
+                    "rows": 3,
+                }
+            ),
         }
 
 
 class OrderForm(forms.ModelForm):
-    """订单头信息表单。
+    """订单头信息表单。.
 
     仅包含顾客、实收金额和还款状态字段。
     应收金额由 OrderItem 行项自动合计，不在此表单中暴露。
@@ -99,40 +116,46 @@ class OrderForm(forms.ModelForm):
 
     class Meta:
         model = Order
-        fields = ['account', 'total_price_real', 'status']
+        fields = ["account", "total_price_real", "status"]
         widgets = {
-            'account': forms.Select(attrs={'class': 'form-input'}),
-            'total_price_real': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'placeholder': '0.00',
-                'step': '0.01',
-                'min': '0',
-            }),
-            'status': forms.Select(attrs={'class': 'form-input'}),
+            "account": forms.Select(attrs={"class": "form-input"}),
+            "total_price_real": forms.NumberInput(
+                attrs={
+                    "class": "form-input",
+                    "placeholder": "0.00",
+                    "step": "0.01",
+                    "min": "0",
+                }
+            ),
+            "status": forms.Select(attrs={"class": "form-input"}),
         }
 
 
 class OrderItemForm(forms.ModelForm):
-    """订单行项表单 —— 用于 formset 中管理每个商品的数量。
+    """订单行项表单 —— 用于 formset 中管理每个商品的数量。.
 
     unit_price 设为 readonly，前端通过 JS 自动填充当前商品单价。
     """
 
     class Meta:
         model = OrderItem
-        fields = ['goods', 'quantity', 'unit_price']
+        fields = ["goods", "quantity", "unit_price"]
         widgets = {
-            'goods': forms.Select(attrs={'class': 'form-input'}),
-            'quantity': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'min': '1',
-                'value': '1',
-            }),
-            'unit_price': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'readonly': 'readonly',
-                'step': '0.01',
-            }),
+            "goods": forms.Select(attrs={"class": "form-input"}),
+            "quantity": forms.NumberInput(
+                attrs={
+                    "class": "form-input",
+                    "min": "1",
+                    "value": "1",
+                }
+            ),
+            "unit_price": forms.NumberInput(
+                attrs={
+                    "class": "form-input",
+                    "readonly": "readonly",
+                    "step": "0.01",
+                }
+            ),
         }
 
 

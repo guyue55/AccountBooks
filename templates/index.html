@@ -2,191 +2,248 @@
 
 {% block title %}账簿管理系统 - Dashboard{% endblock %}
 {% block content %}
-<header class="page-header" style="justify-content: space-between; align-items: center;">
+  <header class="page-header"
+          style="justify-content: space-between;
+                 align-items: center">
     <div>
-        <h1>数据总览</h1>
-        <p>欢迎回来，这里是您的实时账务数据汇总。</p>
+      <h1>数据总览</h1>
+      <p>欢迎回来，这里是您的实时账务数据汇总。</p>
     </div>
     <a href="{% url 'export_accountbooks' %}" class="btn btn-secondary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-        导出账簿数据
+      <svg width="16"
+           height="16"
+           viewBox="0 0 24 24"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="2"
+           stroke-linecap="round"
+           stroke-linejoin="round"
+           style="margin-right: 6px">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      导出账簿数据
     </a>
-</header>
-<!-- 统计卡片 -->
-<div class="stats-grid">
+  </header>
+  <!-- 统计卡片 -->
+  <div class="stats-grid">
     <div class="stat-card">
-        <span class="stat-label">待收总额</span>
-        <div class="stat-value">¥ {{ total_wait|default:"0.00" }}</div>
+      <span class="stat-label">待收总额</span>
+      <div class="stat-value">¥ {{ total_wait|default:"0.00" }}</div>
     </div>
     <div class="stat-card">
-        <span class="stat-label">已收总额</span>
-        <div class="stat-value" style="color: var(--accent-green)">¥ {{ total_over|default:"0.00" }}</div>
+      <span class="stat-label">已收总额</span>
+      <div class="stat-value" style="color: var(--accent-green)">¥ {{ total_over|default:"0.00" }}</div>
     </div>
     <div class="stat-card">
-        <span class="stat-label">赖账损失</span>
-        <div class="stat-value" style="color: var(--accent-red)">¥ {{ total_default|default:"0.00" }}</div>
+      <span class="stat-label">赖账损失</span>
+      <div class="stat-value" style="color: var(--accent-red)">¥ {{ total_default|default:"0.00" }}</div>
     </div>
     <div class="stat-card">
-        <span class="stat-label">订单总数</span>
-        <div class="stat-value">{{ order_count|default:"0" }}</div>
+      <span class="stat-label">订单总数</span>
+      <div class="stat-value">{{ order_count|default:"0" }}</div>
     </div>
     <div class="stat-card">
-        <span class="stat-label">收款率</span>
-        <div class="stat-value" style="color: var(--primary-color)">{{ collection_rate|default:"0" }}%</div>
+      <span class="stat-label">收款率</span>
+      <div class="stat-value" style="color: var(--primary-color)">{{ collection_rate|default:"0" }}%</div>
     </div>
-</div>
-
-<!-- ECharts 趋势图和饼图区域 -->
-<div class="charts-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+  </div>
+  <!-- ECharts 趋势图和饼图区域 -->
+  <div class="charts-grid"
+       style="display: grid;
+              grid-template-columns: 2fr 1fr;
+              gap: 1.5rem;
+              margin-bottom: 2rem">
     <!-- 近7日流水趋势 (折线图) -->
     <div class="stat-card" style="padding: 1.5rem;">
-        <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);">近七日流水趋势</h3>
-        <div id="revenueChart" style="width: 100%; height: 300px;"></div>
+      <h3 style="margin-bottom: 1rem;
+                 font-size: 1.1rem;
+                 color: var(--text-main)">近七日流水趋势</h3>
+      <div id="revenueChart" style="width: 100%; height: 300px;"></div>
     </div>
-
     <!-- 欠款客户分布 (饼图) -->
     <div class="stat-card" style="padding: 1.5rem;">
-        <h3 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-main);">客户欠款分布</h3>
-        <div id="debtChart" style="width: 100%; height: 300px;"></div>
+      <h3 style="margin-bottom: 1rem;
+                 font-size: 1.1rem;
+                 color: var(--text-main)">客户欠款分布</h3>
+      <div id="debtChart" style="width: 100%; height: 300px;"></div>
     </div>
-</div>
-
-<!-- 债务人明细表 -->
-<div class="table-container">
+  </div>
+  <!-- 债务人明细表 -->
+  <div class="table-container">
     <h3>债务人详情</h3>
     <table>
-        <thead>
-            <tr>
-                <th>债务人</th>
-                <th>待还金额</th>
-                <th>已还</th>
-                <th>赖账</th>
-                <th>最后更新</th>
-                <th>状态</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for book in books %}
-            <tr>
-                <td style="font-weight: 500;">{{ book.account_info.name }}</td>
-                <td>¥ {{ book.money_wait }}</td>
-                <td style="color: var(--accent-green);">¥ {{ book.money_over }}</td>
-                <td style="color: var(--accent-red);">¥ {{ book.money_default }}</td>
-                <td style="color: var(--text-dim); font-size: 0.875rem;">{{ book.updated|date:"Y-m-d H:i" }}</td>
-                <td>
-                    {% if book.money_wait > 0 %}
-                    <span class="status-badge status-wait">催收中</span>
-                    {% elif book.money_default > 0 %}
-                    <span class="status-badge status-default">已逾期</span>
-                    {% else %}
-                    <span class="status-badge status-ok">已结清</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="empty-state">暂无记录</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead>
+        <tr>
+          <th>债务人</th>
+          <th>待还金额</th>
+          <th>已还</th>
+          <th>赖账</th>
+          <th>最后更新</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for book in books %}
+          <tr>
+            <td style="font-weight: 500;">{{ book.account_info.name }}</td>
+            <td>¥ {{ book.money_wait }}</td>
+            <td style="color: var(--accent-green);">¥ {{ book.money_over }}</td>
+            <td style="color: var(--accent-red);">¥ {{ book.money_default }}</td>
+            <td style="color: var(--text-dim); font-size: 0.875rem;">{{ book.updated|date:"Y-m-d H:i" }}</td>
+            <td>
+              {% if book.money_wait > 0 %}
+                <span class="status-badge status-wait">催收中</span>
+              {% elif book.money_default > 0 %}
+                <span class="status-badge status-default">已逾期</span>
+              {% else %}
+                <span class="status-badge status-ok">已结清</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="empty-state">暂无记录</td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
-</div>
-
+  </div>
 {% endblock %}
-
 {% block extra_js %}
-<!-- 引入 ECharts -->
-<script src="https://fastly.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // ========== 1. 近七日流水趋势折线图 ==========
-        var revenueChart = echarts.init(document.getElementById('revenueChart'));
+  <!-- 引入 ECharts -->
+  <script src="https://fastly.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          // ========== 1. 近七日流水趋势折线图 ==========
+          var revenueChart = echarts.init(document.getElementById('revenueChart'));
 
-        // 从 Django 模板接收 JSON 数据
-        var dates = JSON.parse('{{ chart_revenue_dates|escapejs }}');
-        var revData = JSON.parse('{{ chart_revenue_data|escapejs }}');
+          // 从 Django 模板接收 JSON 数据
+          var dates = JSON.parse('{{ chart_revenue_dates|escapejs }}');
+          var revData = JSON.parse('{{ chart_revenue_data|escapejs }}');
 
-        var revenueOption = {
-            tooltip: { trigger: 'axis' },
-            grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-            xAxis: {
-                type: 'category',
-                boundaryGap: false,
-                data: dates,
-                axisLabel: { color: '#94a3b8' },
-                axisLine: { lineStyle: { color: 'rgba(255,255,255,0.1)' } }
-            },
-            yAxis: {
-                type: 'value',
-                axisLabel: { color: '#94a3b8' },
-                splitLine: { lineStyle: { color: 'rgba(255,255,255,0.05)' } }
-            },
-            series: [{
-                name: '当日收款',
-                type: 'line',
-                data: revData,
-                smooth: true,
-                areaStyle: {
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(99, 102, 241, 0.5)' },
-                        { offset: 1, color: 'rgba(99, 102, 241, 0.05)' }
-                    ])
-                },
-                itemStyle: { color: '#6366f1' },
-                lineStyle: { width: 3 }
-            }]
-        };
-        revenueChart.setOption(revenueOption);
+          var revenueOption = {
+              tooltip: {
+                  trigger: 'axis'
+              },
+              grid: {
+                  left: '3%',
+                  right: '4%',
+                  bottom: '3%',
+                  containLabel: true
+              },
+              xAxis: {
+                  type: 'category',
+                  boundaryGap: false,
+                  data: dates,
+                  axisLabel: {
+                      color: '#94a3b8'
+                  },
+                  axisLine: {
+                      lineStyle: {
+                          color: 'rgba(255,255,255,0.1)'
+                      }
+                  }
+              },
+              yAxis: {
+                  type: 'value',
+                  axisLabel: {
+                      color: '#94a3b8'
+                  },
+                  splitLine: {
+                      lineStyle: {
+                          color: 'rgba(255,255,255,0.05)'
+                      }
+                  }
+              },
+              series: [{
+                  name: '当日收款',
+                  type: 'line',
+                  data: revData,
+                  smooth: true,
+                  areaStyle: {
+                      color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                          offset: 0,
+                          color: 'rgba(99, 102, 241, 0.5)'
+                      }, {
+                          offset: 1,
+                          color: 'rgba(99, 102, 241, 0.05)'
+                      }])
+                  },
+                  itemStyle: {
+                      color: '#6366f1'
+                  },
+                  lineStyle: {
+                      width: 3
+                  }
+              }]
+          };
+          revenueChart.setOption(revenueOption);
 
-        // ========== 2. 客户欠款分布饼图 ==========
-        var debtChart = echarts.init(document.getElementById('debtChart'));
+          // ========== 2. 客户欠款分布饼图 ==========
+          var debtChart = echarts.init(document.getElementById('debtChart'));
 
-        var debtData = JSON.parse('{{ chart_debt_data|escapejs }}');
+          var debtData = JSON.parse('{{ chart_debt_data|escapejs }}');
 
-        // 如果没有欠款数据，显示占位
-        if (debtData.length === 0) {
-            debtData = [{ name: '无欠款', value: 0 }];
-        }
+          // 如果没有欠款数据，显示占位
+          if (debtData.length === 0) {
+              debtData = [{
+                  name: '无欠款',
+                  value: 0
+              }];
+          }
 
-        var debtOption = {
-            tooltip: { trigger: 'item', formatter: '{b}: ¥{c} ({d}%)' },
-            legend: {
-                orient: 'horizontal',
-                bottom: 0,
-                textStyle: { color: '#94a3b8', fontSize: 11 }
-            },
-            series: [{
-                name: '欠款分布',
-                type: 'pie',
-                radius: ['40%', '70%'],
-                center: ['50%', '45%'],
-                avoidLabelOverlap: false,
-                itemStyle: {
-                    borderRadius: 8,
-                    borderColor: '#1e293b',
-                    borderWidth: 2
-                },
-                label: { show: false, position: 'center' },
-                emphasis: {
-                    label: { show: true, fontSize: 16, fontWeight: 'bold', color: '#f8fafc' }
-                },
-                labelLine: { show: false },
-                data: debtData,
-                color: ['#ef4444', '#f59e0b', '#10b981', '#6366f1', '#a855f7', '#64748b']
-            }]
-        };
-        debtChart.setOption(debtOption);
+          var debtOption = {
+              tooltip: {
+                  trigger: 'item',
+                  formatter: '{b}: ¥{c} ({d}%)'
+              },
+              legend: {
+                  orient: 'horizontal',
+                  bottom: 0,
+                  textStyle: {
+                      color: '#94a3b8',
+                      fontSize: 11
+                  }
+              },
+              series: [{
+                  name: '欠款分布',
+                  type: 'pie',
+                  radius: ['40%', '70%'],
+                  center: ['50%', '45%'],
+                  avoidLabelOverlap: false,
+                  itemStyle: {
+                      borderRadius: 8,
+                      borderColor: '#1e293b',
+                      borderWidth: 2
+                  },
+                  label: {
+                      show: false,
+                      position: 'center'
+                  },
+                  emphasis: {
+                      label: {
+                          show: true,
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          color: '#f8fafc'
+                      }
+                  },
+                  labelLine: {
+                      show: false
+                  },
+                  data: debtData,
+                  color: ['#ef4444', '#f59e0b', '#10b981', '#6366f1', '#a855f7', '#64748b']
+              }]
+          };
+          debtChart.setOption(debtOption);
 
-        // ========== 3. 响应式调整 ==========
-        window.addEventListener('resize', function () {
-            revenueChart.resize();
-            debtChart.resize();
-        });
-    });
-</script>
+          // ========== 3. 响应式调整 ==========
+          window.addEventListener('resize', function() {
+              revenueChart.resize();
+              debtChart.resize();
+          });
+      });
+  </script>
 {% endblock %}
