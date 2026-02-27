@@ -4,6 +4,7 @@
 set -e
 
 echo "🗄️  Checking database migrations..."
+python manage.py makemigrations accounts
 python manage.py migrate
 
 echo "🎨 Collecting static files..."
