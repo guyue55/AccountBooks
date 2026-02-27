@@ -44,11 +44,11 @@
   </tr>
   <tr>
     <td><img src="docs/screenshots/customers.png" alt="Customers" title="客户管理"></td>
-    <td><img src="docs/screenshots/theme_switcher.png" alt="Theme Switcher" title="主题切换"></td>
+    <td><img src="docs/screenshots/theme_switch.png" alt="Theme Switch" title="主题切换"></td>
   </tr>
   <tr>
     <td align="center">👤 客户账务总览</td>
-    <td align="center">🎨 多主题切换器</td>
+    <td align="center">🎨 多主题切换（Light 模式）</td>
   </tr>
 </table>
 
@@ -92,13 +92,18 @@ uv run python manage.py runserver
 # 1. 同步依赖并自动创建虚拟环境 .venv
 uv sync
 
-# 2. 数据库迁移
+# 2. 生成并应用数据库迁移
+# 注意：如果是首次安装，建议生成 accounts 模块的迁移文件
+uv run python manage.py makemigrations accounts
 uv run python manage.py migrate
 
-# 3. 创建超级管理员
+# 3. 收集静态文件（WhiteNoise 需要）
+uv run python manage.py collectstatic --noinput
+
+# 4. 创建超级管理员
 uv run python manage.py createsuperuser
 
-# 4. 启动开发服务器
+# 5. 启动开发服务器
 uv run python manage.py runserver
 ```
 
@@ -162,7 +167,11 @@ AccountBooks/
 │   ├── Dockerfile         # 多阶段构建 Docker 镜像
 │   └── docker-entrypoint.sh
 ├── scripts/
-│   └── populate_data.py   # 示例数据生成脚本
+│   ├── populate_data.py   # 示例数据生成脚本
+│   ├── format_code.sh     # 代码一键格式化工具 (Ruff + djLint)
+│   └── take_screenshots.py # Playwright 自动化截图脚本
+├── docs/
+│   └── screenshots/       # 自动生成的系统截图
 ├── start_prod.sh          # 生产环境一键启动
 ├── init_project.sh        # 项目一键初始化
 └── pyproject.toml         # 项目配置与依赖
