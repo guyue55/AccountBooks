@@ -19,13 +19,11 @@ import json
 import logging
 from decimal import Decimal
 
-logger = logging.getLogger("accounts")
-
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Count, Sum
+from django.db.models import Count, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render, reverse
 from django.urls import reverse_lazy
@@ -46,6 +44,8 @@ from .forms import (
     OrderItemFormSet,
 )
 from .models import AccountBooks, AccountInfo, GoodsInfo, Order, OrderItem, UserProfile
+
+logger = logging.getLogger("accounts")
 
 # ===========================================================================
 # 通用工具视图
@@ -314,8 +314,6 @@ class OrdersView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """优化查询并支持多维筛选。."""
-        from django.db.models import Q
-
         qs = (
             Order.objects.select_related("account")
             .prefetch_related("items__goods")
@@ -635,8 +633,7 @@ class CustomerListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        from django.db.models import Q
-
+        """支持针对顾客姓名的模糊搜索。."""
         qs = super().get_queryset().order_by("-updated")
         q = self.request.GET.get("q")
         if q:
