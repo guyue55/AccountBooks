@@ -14,28 +14,28 @@ dependencies = [
     { name = "django", version = "5.2.11", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "django", version = "6.0.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "django-jazzmin" },
-    { name = "djlint" },
     { name = "gunicorn" },
     { name = "whitenoise" },
 ]
 
 [package.dev-dependencies]
 dev = [
-    { name = "playwright" },
+    { name = "djlint" },
     { name = "ruff" },
+    { name = "playwright" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "django", specifier = ">=3.2.13" },
     { name = "django-jazzmin", specifier = ">=2.6.0" },
-    { name = "djlint", specifier = ">=1.34.0" },
     { name = "gunicorn", specifier = ">=25.1.0" },
     { name = "whitenoise", specifier = ">=6.6.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "djlint", specifier = ">=1.34.0" },
     { name = "playwright", specifier = ">=1.58.0" },
     { name = "ruff", specifier = ">=0.15.4" },
 ]

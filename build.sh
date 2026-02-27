@@ -12,6 +12,7 @@ echo "🐳 Building Docker image: ${IMAGE_NAME}:${TAG}..."
 # Check if uv is installed
 if command -v uv &> /dev/null; then
     echo "📦 Syncing requirements.txt from pyproject.toml..."
+    # 默认只编译项目核心依赖，不包含 dev 组
     uv pip compile pyproject.toml -o requirements.txt
 else
     echo "⚠️  'uv' not found. Skipping requirements.txt sync. Make sure it's up to date!"

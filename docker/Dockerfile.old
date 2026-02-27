@@ -1,0 +1,58 @@
+# ==========================================
+# 极致精简版 Dockerfile (针对 Alpine 优化)
+# ==========================================
+
+# 第一阶段：构建依赖 (Builder)
+FROM python:3.12-alpine AS builder
+
+WORKDIR /app
+
+# 设置环境变量，禁止生成字节码
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# 只有在需要编译 C 扩展时才安装这些，目前项目主要依赖 Django 等纯 Python 包
+# RUN apk add --no-cache gcc musl-dev libffi-dev
+
+COPY requirements.txt .
+
+# 使用 pip 预编译 wheels，不带缓存
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
+
+
+# 第二阶段：生产运行 (Runner)
+FROM python:3.12-alpine AS runner
+
+WORKDIR /app
+
+# 生产环境配置
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DJANGO_SETTINGS_MODULE=AccountBooks.settings \
+    DJANGO_DEBUG=False
+
+# 如果后续需要 curl 健康检查，可以保留；不需要则去掉以极致压缩
+# RUN apk add --no-cache curl
+
+# 从构建阶段仅仅复制编译后的 wheels 文件
+COPY --from=builder /app/wheels /wheels
+RUN pip install --no-cache-dir /wheels/* \
+    && rm -rf /wheels
+
+# 复制项目代码 (利用 .dockerignore 排除所有垃圾文件)
+COPY . .
+
+# 修正权限并收集静态资源
+RUN chmod +x /app/docker/docker-entrypoint.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/app/docker/docker-entrypoint.sh"]
+
+CMD ["gunicorn", "AccountBooks.wsgi:application", \
+    "--bind", "0.0.0.0:8000", \
+    "--workers", "2", \
+    "--threads", "8", \
+    "--timeout", "120", \
+    "--access-logfile", "-", \
+    "--error-logfile", "-"]

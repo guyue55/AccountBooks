@@ -23,7 +23,10 @@ uv run python manage.py collectstatic --noinput
 # -w 1: 1 个工作进程，提供基础的高可用和负载均衡
 # --threads 8: 每个进程 8 条线程，足以应对 50 人规模的并发 I/O
 # --timeout 120: 避免由于 SQLite 锁等待等导致的进程强杀
-echo "🔥 Starting Gunicorn Server with Optimized Config..."
+echo "🔥 Starting Gunicorn Server with Optimized Config (Debug: OFF)..."
+# 强制设置生产环境变量
+export DJANGO_DEBUG=False
+
 exec uv run gunicorn AccountBooks.wsgi:application \
     --workers 1 \
     --threads 8 \
