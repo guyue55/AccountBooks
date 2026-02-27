@@ -1,5 +1,4 @@
-"""
-AccountBooks 自动化截图工具。
+"""AccountBooks 自动化截图工具。.
 
 该脚本使用 Playwright 驱动浏览器，自动执行以下操作：
 1. 登录系统。
@@ -12,7 +11,6 @@ AccountBooks 自动化截图工具。
 import asyncio
 import os
 from pathlib import Path
-from typing import Optional
 
 from playwright.async_api import Browser, BrowserContext, Page, async_playwright
 
@@ -56,11 +54,10 @@ SCREENSHOT_TASKS = [
 
 
 class ScreenshotAutomation:
-    """AccountBooks 自动化截图类。"""
+    """AccountBooks 自动化截图类。."""
 
     def __init__(self, base_url: str, headless: bool = False):
-        """
-        初始化自动化对象。
+        """初始化自动化对象。.
 
         Args:
             base_url: 目标系统的基础 URL。
@@ -68,13 +65,13 @@ class ScreenshotAutomation:
         """
         self.base_url = base_url.rstrip("/")
         self.headless = headless
-        self.browser: Optional[Browser] = None
-        self.context: Optional[BrowserContext] = None
-        self.page: Optional[Page] = None
+        self.browser: Browser | None = None
+        self.context: BrowserContext | None = None
+        self.page: Page | None = None
         self.pw = None
 
     async def start(self):
-        """初始化 Playwright 浏览器环境。"""
+        """初始化 Playwright 浏览器环境。."""
         self.pw = await async_playwright().start()
         # 启动 Chromium 浏览器
         self.browser = await self.pw.chromium.launch(headless=self.headless)
@@ -85,14 +82,14 @@ class ScreenshotAutomation:
         self.page = await self.context.new_page()
 
     async def stop(self):
-        """释放浏览器资源。"""
+        """释放浏览器资源。."""
         if self.browser:
             await self.browser.close()
         if self.pw:
             await self.pw.stop()
 
     async def login(self, username: str, password: str) -> bool:
-        """执行登录操作。"""
+        """执行登录操作。."""
         login_url = f"{self.base_url}/login"
         print(f"🔐 正在尝试登录: {login_url}")
 
@@ -118,8 +115,7 @@ class ScreenshotAutomation:
         return False
 
     async def capture_page(self, name: str, path: str, wait_for_selector: str):
-        """
-        抓取特定页面的截图。
+        """抓取特定页面的截图。.
 
         Args:
             name: 截图文件的名称（不含后缀）。
@@ -149,7 +145,7 @@ class ScreenshotAutomation:
         print(f"🛡️  图片已保存: {output_path.name}")
 
     async def toggle_theme_and_capture(self):
-        """测试主题切换功能并截图。"""
+        """测试主题切换功能并截图。."""
         print("🌈 正在测试主题切换并截图...")
         try:
             # 1. 点击用户头像展开下拉菜单
@@ -174,7 +170,7 @@ class ScreenshotAutomation:
 
 
 async def run_automation():
-    """主执行逻辑协调。"""
+    """主执行逻辑协调。."""
     # 如果处于开发环境调试，可以将 headless 设为 False
     automation = ScreenshotAutomation(BASE_URL, headless=True)
     try:
