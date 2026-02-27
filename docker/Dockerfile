@@ -1,28 +1,25 @@
 # Stage 1: 构建阶段 (Builder)
-# 使用官方 Python 3.12 精简版作为基础镜像
 FROM python:3.12-slim-bookworm AS builder
 
-# 如果遇到 403 Forbidden，可以尝试更换镜像源，或者检查 Docker Hub 网络连接
-# 或者尝试使用: FROM public.ecr.aws/docker/library/python:3.12-slim-bookworm
-
-# 设置工作目录
 WORKDIR /app
 
-# 设置环境变量
+# 设置环境变量，防止生成 .pyc 并禁用 pip 缓存（由 Docker 缓存层管理）
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
+# # 安装构建依赖 (如果后续有处理图片的库如 Pillow, 可以在这里加 libjpeg-dev 等)
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     build-essential \
+#     && rm -rf /var/lib/apt/lists/*
+
 # 创建虚拟环境
 RUN python -m venv /opt/venv
-# 将虚拟环境加入 PATH
 ENV PATH="/opt/venv/bin:$PATH"
 
-# 复制依赖文件
+# 安装依赖
 COPY requirements.txt .
-
-# 安装 Python 依赖
-# --no-cache-dir: 减小镜像体积
-RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# 构建时默认不指定国内源，由构建逻辑自行处理，或保持灵活
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: 运行阶段 (Runner)
 FROM python:3.12-alpine AS runner
@@ -33,32 +30,33 @@ WORKDIR /app
 # 设置环境变量
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    DJANGO_SETTINGS_MODULE=AccountBooks.settings \
+    DJANGO_DEBUG=False
 
-# 安装运行时必需的系统库，并立即清理缓存以减小体积
-# # 这一步合并了 install 和 clean，避免 apt 缓存被提交到镜像层
-# RUN apt-get update && apt-get install -y --no-install-recommends \
-#     curl \
-#     && rm -rf /var/lib/apt/lists/*
-
-# 从构建阶段复制构建好的虚拟环境
+# 从 builder 复制虚拟环境
 COPY --from=builder /opt/venv /opt/venv
 
 # 复制项目代码 (利用 .dockerignore 排除不必要文件)
 COPY . .
 
-# 复制并设置入口脚本
-COPY docker/docker-entrypoint.sh /app/docker-entrypoint.sh
-RUN chmod +x /app/docker-entrypoint.sh
+# 修正入口脚本权限
+RUN chmod +x /app/docker/docker-entrypoint.sh
 
-# 收集静态文件
+# 预收集静态文件（WhiteNoise 需要）
 RUN python manage.py collectstatic --noinput
 
 # 暴露端口
 EXPOSE 8000
 
-# 设置入口点
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+# 默认使用 docker 目录下的入口脚本
+ENTRYPOINT ["/app/docker/docker-entrypoint.sh"]
 
-# 启动命令
-CMD ["gunicorn", "AccountBooks.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--threads", "8", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-"]
+# 启动命令 (使用更精确的参数配置)
+CMD ["gunicorn", "AccountBooks.wsgi:application", \
+    "--bind", "0.0.0.0:8000", \
+    "--workers", "2", \
+    "--threads", "8", \
+    "--timeout", "120", \
+    "--access-logfile", "-", \
+    "--error-logfile", "-"]

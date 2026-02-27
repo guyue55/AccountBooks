@@ -1,43 +1,26 @@
 # Git
 .git
 .gitignore
+.github
 
 # Python
-__pycache__
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
+__pycache__/
+*.py[cod]
+*$py.class
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Database
-db.sqlite3
-*.sqlite3
-
-# Docker
-Dockerfile
-.dockerignore
-
-# IDEs
-.idea
-.vscode
-.trae
-
-# Local Development
-local_settings.py
+venv/
+env/
 .env
-.coverage
-htmlcov/
-pytest_cache/
 .pytest_cache/
+.ruff_cache/
+.djlint_cache/
 
-# OS
+# Project Specific
+docs/screenshots/
+*.log
+db.sqlite3
+staticfiles/
+
+# System
 .DS_Store
 Thumbs.db
-
-# Static (Generated)
-staticfiles/

@@ -158,3 +158,5 @@ cython_debug/
 migrations/
 
 staticfiles/
+
+.ruff_cache/
