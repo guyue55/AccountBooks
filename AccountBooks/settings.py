@@ -104,7 +104,8 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation."
+        "UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -177,11 +178,6 @@ WHITENOISE_MANIFEST_STRICT = False
 
 
 # 模板文件配置
-# (Existing TEMPLATES config was duplicated in original file, keeping the one above and removing this block or merging if different)
-# Wait, the original file had TEMPLATES defined twice?
-# Let's check the original file content again.
-# Yes, lines 72-86 and 166-181. The second one has 'DIRS': [os.path.join(BASE_DIR, 'templates')]. The first one has 'DIRS': [].
-# I should keep the second one which is correct.
 
 # Django Jazzmin Settings
 JAZZMIN_SETTINGS = {
@@ -248,8 +244,6 @@ JAZZMIN_UI_TWEAKS = {
 # ==============================================================================
 # LOGGING CONFIGURATION
 # ==============================================================================
-import os
-
 LOGS_DIR = os.path.join(BASE_DIR, "logs")
 if not os.path.exists(LOGS_DIR):
     os.makedirs(LOGS_DIR)

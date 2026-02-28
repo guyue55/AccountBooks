@@ -33,6 +33,7 @@ class UserProfile(models.Model):
     )
 
     def __str__(self):
+        """返回说明."""
         return f"{self.user.username} 的个人设置"
 
 
@@ -53,7 +54,10 @@ def save_user_profile(sender, instance, **kwargs):
 
 class SoftDeleteQuerySet(models.QuerySet):
     def delete(self):
-        """批量执行逻辑删除，返回与 Django 原生 delete() 相同格式的 (count, dict) 元组。."""
+        """批量执行逻辑删除。.
+
+        返回与原生 delete 相同格式的 (count, dict) 元组。
+        """
         count = self.count()
         self.update(is_deleted=True, deleted_at=timezone.now())
         # 返回 (数量, {model_label: 数量}) 以兼容需要解包的调用方
@@ -345,7 +349,10 @@ class AccountBooks(SoftDeleteModel):
 
     def __str__(self):
         """返回账簿汇总摘要。."""
-        return f"{self.account_info.name} | 待还: {self.money_wait}元 | 赖账: {self.money_default}元"
+        return (
+            f"{self.account_info.name} | "
+            f"待还: {self.money_wait}元 | 赖账: {self.money_default}元"
+        )
 
     class Meta:
         verbose_name = "账簿总览"
@@ -370,8 +377,7 @@ def update_account_books(sender, instance, **kwargs):
 @receiver(post_delete, sender=OrderItem)
 def update_order_total_on_item_change(sender, instance, **kwargs):
     """当订单行项发生变化时，自动重新计算订单应收总价。."""
-    try:
+    import contextlib
+
+    with contextlib.suppress(Order.DoesNotExist):
         instance.order.calc_total()
-    except Order.DoesNotExist:
-        # 订单已被删除，无需处理
-        pass

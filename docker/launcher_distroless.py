@@ -3,6 +3,7 @@ import sys
 
 import django
 from django.core.management import call_command
+from gunicorn.app.wsgiapp import run
 
 # 1. 配置 Django 环境
 # 确保项目根目录在 Python 路径中
@@ -37,7 +38,6 @@ except Exception as e:
 
 # 4. 启动 Gunicorn
 print("🔥 Starting Gunicorn Server via Launcher...")
-from gunicorn.app.wsgiapp import run
 
 # 构造原本在 CMD 中的参数
 sys.argv = [

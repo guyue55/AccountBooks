@@ -10,6 +10,7 @@ from accounts.models import AccountBooks, AccountInfo, GoodsInfo, Order, OrderIt
 
 class OrderTestCase(TestCase):
     def setUp(self):
+        """初始化."""
         self.account = AccountInfo.objects.create(name="Test User")
         self.goods = GoodsInfo.objects.create(
             goods="Apple", goods_price=Decimal("10.00")
@@ -36,6 +37,7 @@ class OrderTestCase(TestCase):
 
 class AccountBooksTestCase(TestCase):
     def setUp(self):
+        """初始化."""
         self.account = AccountInfo.objects.create(name="Test User")
         self.goods = GoodsInfo.objects.create(
             goods="Apple", goods_price=Decimal("100.00")
@@ -71,6 +73,7 @@ class AccountBooksTestCase(TestCase):
 
 class ApiValidationTestCase(TestCase):
     def setUp(self):
+        """初始化."""
         self.client = Client()
         self.user = User.objects.create_user(username="apiuser", password="pass12345")
         self.client.login(username="apiuser", password="pass12345")
@@ -79,6 +82,7 @@ class ApiValidationTestCase(TestCase):
         )
 
     def test_negative_quantity_returns_400(self):
+        """负数."""
         url = reverse("calc_price")
         payload = {"items": [{"goods_id": self.goods.id, "quantity": -1}]}
         response = self.client.post(
@@ -87,6 +91,7 @@ class ApiValidationTestCase(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_non_integer_quantity_returns_400(self):
+        """非整."""
         url = reverse("calc_price")
         payload = {"items": [{"goods_id": self.goods.id, "quantity": "abc"}]}
         response = self.client.post(

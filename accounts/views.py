@@ -15,6 +15,7 @@
 - POST AJAX 请求 → 成功返回 JSON / 失败返回带错误的片段
 """
 
+import csv
 import json
 import logging
 from decimal import Decimal
@@ -56,6 +57,7 @@ class HelloView(View):
     """一个简单的入门测试视图。."""
 
     def get(self, request, *args, **kwargs):
+        """处理 GET."""
         return HttpResponse("<h1>Hello World！</h1>")
 
 
@@ -63,6 +65,7 @@ class WorkView(View):
     """默认工作页面视图。."""
 
     def get(self, request, *args, **kwargs):
+        """处理 GET."""
         return HttpResponse("<h1>System is Running!</h1>")
 
 
@@ -70,6 +73,7 @@ class Page404View(View):
     """自定义 404 错误触发视图。."""
 
     def get(self, request, *args, **kwargs):
+        """处理 GET."""
         raise Http404("该页面不存在。维护人员暂时不在线，请稍后再试。")
 
 
@@ -77,6 +81,7 @@ class RedirectToLoginView(View):
     """将旧 /list 路由重定向到登录页。."""
 
     def get(self, request, *args, **kwargs):
+        """处理 GET."""
         return redirect(reverse("login"))
 
 
@@ -84,6 +89,7 @@ class NamespaceInfoView(View):
     """调试用：展示当前请求的命名空间信息。."""
 
     def get(self, request, *args, **kwargs):
+        """处理 GET."""
         current_namespace = request.resolver_match.namespace
         return HttpResponse(f"<h1>命名空间 (Namespace): {current_namespace}</h1>")
 
@@ -99,6 +105,7 @@ class LoginView(TemplateView):
     template_name = "login-meihua.html"
 
     def get(self, request, *args, **kwargs):
+        """处理 GET."""
         if request.user.is_authenticated:
             return redirect("index")
         return super().get(request, *args, **kwargs)
@@ -145,6 +152,7 @@ class LogoutView(View):
     """退出登录视图 —— 登出并重定向到登录页。."""
 
     def get(self, request, *args, **kwargs):
+        """处理 GET."""
         logout(request)
         return redirect("login")
 
@@ -198,7 +206,8 @@ class AjaxFormMixin:
                 }
             )
         logger.info(
-            f"User {self.request.user} saved {self.model.__name__} {self.object.pk if self.object else 'new'}"
+            f"User {self.request.user} saved "
+            f"{self.model.__name__} {self.object.pk if self.object else 'new'}"
         )
         return super().form_valid(form)
 
@@ -207,11 +216,13 @@ class AjaxFormMixin:
         if self._is_ajax(self.request):
             context = self.get_context_data(form=form)
             logger.warning(
-                f"User {self.request.user} failed to save {self.model.__name__} due to form errors."
+                f"User {self.request.user} failed to "
+                f"save {self.model.__name__} due to form errors."
             )
             return render(self.request, self.partial_template_name, context)
         logger.warning(
-            f"User {self.request.user} failed to save {self.model.__name__} (non-AJAX) due to form errors."
+            f"User {self.request.user} failed to save "
+            f"{self.model.__name__} (non-AJAX) due to form errors."
         )
         return super().form_invalid(form)
 
@@ -343,6 +354,7 @@ class OrdersView(LoginRequiredMixin, ListView):
         return qs
 
     def get_context_data(self, **kwargs):
+        """获取视图上下文数据."""
         context = super().get_context_data(**kwargs)
         context["active_nav"] = "orders"
         # 保持分页时的筛选参数
@@ -395,7 +407,8 @@ class OrderCreateView(LoginRequiredMixin, AjaxFormMixin, CreateView):
             # 重新计算总价
             order.calc_total()
             logger.info(
-                f"User {self.request.user} created Order {order.pk} with total {order.total_price_real}"
+                f"User {self.request.user} created "
+                f"Order {order.pk} with total {order.total_price_real}"
             )
 
         if self._is_ajax(self.request):
@@ -461,7 +474,8 @@ class OrderUpdateView(LoginRequiredMixin, AjaxFormMixin, UpdateView):
             formset.save()
             order.calc_total()
             logger.info(
-                f"User {self.request.user} updated Order {order.pk} with total {order.total_price_real}"
+                f"User {self.request.user} updated "
+                f"Order {order.pk} with total {order.total_price_real}"
             )
 
         if self._is_ajax(self.request):
@@ -523,6 +537,7 @@ class GoodsListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
+        """获取查询集."""
         qs = super().get_queryset().order_by("-updated")
         q = self.request.GET.get("q")
         if q:
@@ -530,6 +545,7 @@ class GoodsListView(LoginRequiredMixin, ListView):
         return qs
 
     def get_context_data(self, **kwargs):
+        """获取视图上下文数据."""
         context = super().get_context_data(**kwargs)
         context["active_nav"] = "goods"
         # 保持分页时的筛选参数
@@ -552,6 +568,7 @@ class GoodsCreateView(LoginRequiredMixin, AjaxFormMixin, CreateView):
     login_url = "/login"
 
     def get_context_data(self, **kwargs):
+        """获取视图上下文数据."""
         context = super().get_context_data(**kwargs)
         context["title"] = "新增商品"
         return context
@@ -569,6 +586,7 @@ class GoodsUpdateView(LoginRequiredMixin, AjaxFormMixin, UpdateView):
     login_url = "/login"
 
     def get_context_data(self, **kwargs):
+        """获取视图上下文数据."""
         context = super().get_context_data(**kwargs)
         context["title"] = "编辑商品"
         context["is_edit"] = True
@@ -583,18 +601,21 @@ class GoodsDeleteView(LoginRequiredMixin, DeleteView):
     login_url = "/login"
 
     def post(self, request, *args, **kwargs):
+        """处理提交进行数据处理."""
         self.object = self.get_object()
 
         # 手动检查商品是否被非软删除的 OrderItem 引用
         if OrderItem.objects.filter(goods=self.object).exists():
             logger.warning(
-                f"User {request.user} failed to delete Goods {self.object.pk}: Linked to active OrderItems"
+                f"User {request.user} failed to delete Goods "
+                f"{self.object.pk}: Linked to active OrderItems"
             )
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": "该商品已被订单引用，无法直接删除（请先删除对应订单）。",
+                        "message": "该商品已被订单引用，"
+                        "无法直接删除（请先删除对应订单）。",
                     },
                     status=400,
                 )
@@ -606,7 +627,8 @@ class GoodsDeleteView(LoginRequiredMixin, DeleteView):
                 return JsonResponse({"success": True, "message": "商品已删除"})
         except Exception as e:
             logger.error(
-                f"User {request.user} failed to soft-delete Goods {self.object.pk}: {str(e)}"
+                f"User {request.user} failed to soft-delete Goods "
+                f"{self.object.pk}: {str(e)}"
             )
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse(
@@ -615,6 +637,7 @@ class GoodsDeleteView(LoginRequiredMixin, DeleteView):
         return redirect(self.success_url)
 
     def get(self, request, *args, **kwargs):
+        """处理 HTTP GET 请求，直接流转为 post 的删除操作."""
         return self.post(request, *args, **kwargs)
 
 
@@ -646,6 +669,7 @@ class CustomerListView(LoginRequiredMixin, ListView):
         return qs
 
     def get_context_data(self, **kwargs):
+        """获取视图上下文数据."""
         context = super().get_context_data(**kwargs)
         context["active_nav"] = "customers"
         # 保持分页时的筛选参数
@@ -668,6 +692,7 @@ class CustomerCreateView(LoginRequiredMixin, AjaxFormMixin, CreateView):
     login_url = "/login"
 
     def get_context_data(self, **kwargs):
+        """获取视图上下文数据."""
         context = super().get_context_data(**kwargs)
         context["title"] = "新增顾客"
         return context
@@ -685,6 +710,7 @@ class CustomerUpdateView(LoginRequiredMixin, AjaxFormMixin, UpdateView):
     login_url = "/login"
 
     def get_context_data(self, **kwargs):
+        """获取视图上下文数据."""
         context = super().get_context_data(**kwargs)
         context["title"] = "编辑顾客"
         context["is_edit"] = True
@@ -699,18 +725,21 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
     login_url = "/login"
 
     def post(self, request, *args, **kwargs):
+        """处理提交进行数据处理."""
         self.object = self.get_object()
 
         # 手动检查该顾客是否有关联的活动（未软删除）订单
         if Order.objects.filter(account=self.object).exists():
             logger.warning(
-                f"User {request.user} failed to delete Customer {self.object.pk}: Linked to active Orders"
+                f"User {request.user} failed to delete Customer "
+                f"{self.object.pk}: Linked to active Orders"
             )
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": "该顾客有关联订单，无法直接删除（请先删除关联订单）。",
+                        "message": "该顾客有关联订单，"
+                        "无法直接删除（请先删除关联订单）。",
                     },
                     status=400,
                 )
@@ -722,7 +751,8 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
                 return JsonResponse({"success": True, "message": "顾客已删除"})
         except Exception as e:
             logger.error(
-                f"User {request.user} failed to soft-delete Customer {self.object.pk}: {str(e)}"
+                f"User {request.user} failed to soft-delete Customer "
+                f"{self.object.pk}: {str(e)}"
             )
             if request.headers.get("X-Requested-With") == "XMLHttpRequest":
                 return JsonResponse(
@@ -731,6 +761,7 @@ class CustomerDeleteView(LoginRequiredMixin, DeleteView):
         return redirect(self.success_url)
 
     def get(self, request, *args, **kwargs):
+        """处理 HTTP GET 请求，直接流转为 post 的删除操作."""
         return self.post(request, *args, **kwargs)
 
 
@@ -746,8 +777,13 @@ class CalcPriceAPI(LoginRequiredMixin, View):
         { "items": [{ "goods_id": 1, "quantity": 2 }, ...] }
 
     响应格式:
-        { "items": [{ "goods_id": 1, "unit_price": "88.00", "subtotal": "176.00" }, ...],
-          "total": "176.00" }
+        {
+          "items": [
+            { "goods_id": 1, "unit_price": "88.00", "subtotal": "176.00" },
+            ...
+          ],
+          "total": "176.00"
+        }
     """
 
     login_url = "/login"
@@ -826,6 +862,7 @@ class OrderBatchDeleteView(LoginRequiredMixin, View):
     """批量删除交易记录."""
 
     def post(self, request, *args, **kwargs):
+        """处理 POST."""
         try:
             data = json.loads(request.body)
             ids = data.get("ids", [])
@@ -850,6 +887,7 @@ class OrderBatchStatusView(LoginRequiredMixin, View):
     """批量修改交易记录还款状态."""
 
     def post(self, request, *args, **kwargs):
+        """处理 POST."""
         try:
             data = json.loads(request.body)
             ids = data.get("ids", [])
@@ -868,7 +906,8 @@ class OrderBatchStatusView(LoginRequiredMixin, View):
                 AccountBooks.objects.get(account_info=account).update_summary()
 
             logger.info(
-                f"User {request.user} batch updated {updated_count} Orders to status '{status}'"
+                f"User {request.user} batch updated "
+                f"{updated_count} Orders to status '{status}'"
             )
             return JsonResponse(
                 {"success": True, "message": f"成功更新 {updated_count} 条记录状态"}
@@ -886,6 +925,7 @@ class CustomerBatchDeleteView(LoginRequiredMixin, View):
     """批量软删除顾客记录。."""
 
     def post(self, request, *args, **kwargs):
+        """处理 POST."""
         try:
             data = json.loads(request.body)
             ids = data.get("ids", [])
@@ -902,12 +942,14 @@ class CustomerBatchDeleteView(LoginRequiredMixin, View):
             if blocked.exists():
                 names = "、".join(blocked.values_list("name", flat=True))
                 logger.warning(
-                    f"User {request.user} tried to delete Customers with active orders: {names}"
+                    f"User {request.user} tried to delete "
+                    f"Customers with active orders: {names}"
                 )
                 return JsonResponse(
                     {
                         "success": False,
-                        "message": f"以下顾客存在未删除的关联订单，无法直接删除：{names}",
+                        "message": f"以下顾客存在未删除的关联订单，"
+                        f"无法直接删除：{names}",
                     },
                     status=400,
                 )
@@ -930,8 +972,6 @@ class CustomerBatchDeleteView(LoginRequiredMixin, View):
 # 数据导出视图 (CSV)
 # ===========================================================================
 
-import csv
-
 
 class ExportOrdersView(LoginRequiredMixin, View):
     """导出交易记录为 CSV 文件。."""
@@ -939,6 +979,7 @@ class ExportOrdersView(LoginRequiredMixin, View):
     login_url = "/login"
 
     def get(self, request, *args, **kwargs):
+        """响应并导出."""
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="orders_export.csv"'
         response.write(b"\xef\xbb\xbf")  # 写入 BOM, 防止 Excel 乱码
@@ -986,6 +1027,7 @@ class ExportAccountBooksView(LoginRequiredMixin, View):
     login_url = "/login"
 
     def get(self, request, *args, **kwargs):
+        """响应并导出."""
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = (
             'attachment; filename="accountbooks_export.csv"'
@@ -1028,6 +1070,7 @@ class ThemeSwitchView(LoginRequiredMixin, View):
     """处理用户切换主题的 AJAX 请求。."""
 
     def post(self, request, *args, **kwargs):
+        """处理 POST."""
         theme = request.POST.get("theme")
         if theme in ["dark", "light", "nord", "purple"]:
             # 使用 get_or_create 确保 profile 存在

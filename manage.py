@@ -6,6 +6,7 @@ import sys
 
 
 def main():
+    """启动 Django 的主入口函数."""
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "AccountBooks.settings")
     try:
         from django.core.management import execute_from_command_line
