@@ -49,8 +49,13 @@ fi
 
 # Build the image
 # --no-cache: ensure we get the latest updates
+# 
+# 🌐 [单平台构建] 默认：仅为当前宿主机架构编译
 docker build -t ${IMAGE_NAME}:${TAG} -f ${DOCKERFILE} . --no-cache
 
+# 🌐 [多平台跨平台构建] 如果您想在本地直接编译 AMD64 + ARM64 并推送到远端仓库：
+# 请使用下方命令（需安装 docker buildx，且由于普通本地 Docker 引擎没法同时容纳双架构，往往需要跟上 --push 直接推上云）
+# docker buildx build --platform linux/amd64,linux/arm64 -t ${IMAGE_NAME}:${TAG} -f ${DOCKERFILE} . --no-cache
 echo ""
 echo "🎉 Build successful!"
 echo "==============================================="
