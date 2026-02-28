@@ -2,11 +2,11 @@ name: Docker Build and Publish
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "dev" ]
     # 当推送以 v 开头的标签（如 v1.0, v1.1.0）时触发
     tags: [ 'v*' ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "dev" ]
 
 env:
   # 使用 GitHub Container Registry
