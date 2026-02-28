@@ -1,0 +1,30 @@
+name: Cleanup Untagged Images
+
+on:
+  schedule:
+    # 每天凌晨 2 点执行一次扫描
+    - cron: '0 2 * * *'
+  # 允许在 GitHub Actions 界面手动点击运行
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: 🗑️ Delete untagged containers
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: 'accountbooks'
+          package-type: 'container'
+          # 只删除没有标签的镜像 (sha256:xxx)
+          delete-only-untagged-versions: 'true'
+          # ⚠️ 业内血泪经验与标准配置：
+          # 在多架构 (AMD64 + ARM64) 构建时，GHCR 会把平台底层的真实镜像也存为 Untagged，
+          # 只有顶层的 Manifest 索引才有 Tag（即 latest 或 v1.1.0）。
+          # 如果把 Untagged 全部无脑删光，会导致你最近发布的 Tag 镜像因找不到底层文件而直接损坏变砖！
+          # 标准做法是：只清理过旧的垃圾，保留最近几十个未打标签的记录作为活跃缓存和架构底层库。
+          min-versions-to-keep: 30
+          token: ${{ secrets.GITHUB_TOKEN }}
