@@ -121,20 +121,31 @@ uv run python manage.py runserver
 > **配置说明**：默认使用 `1 Worker × 8 Threads` 模式，适合 50 人以下的内部使用场景。
 > 建议配合 **Nginx** 处理静态文件与 SSL 证书。
 
-#### Docker 容器化部署
+#### Docker 容器化部署 (双版本支持)
+
+本项目目前采用**双版本架构**设计，提供**标准版 (Alpine)** 和**极致安全版 (Distroless)** 两种 Docker 镜像，内置一键可视化构建脚本：
 
 ```bash
-# 构建镜像
-docker build -f docker/Dockerfile -t accountbooks:latest .
+# 自动探测环境并拉取菜单，提供镜像选择：
+# 1) Standard: 体积小巧 (~150MB)，含 Shell，方便进容器排查和调试
+# 2) Distroless: 极致安全 (~200MB)，大厂生产级规范，直接隔离所有 Bash 注入风险
+./build.sh
 
-# 运行容器
+# 在 CI/CD 无人值守环境也可以指定参数一键构建：
+./build.sh --distroless
+```
+
+**运行容器（以 Distroless 版为例）：**
+> *提示：在挂载宿主机 SQLite 数据库时，两个镜像均能在启动时自动完成表结构的迁移与超管验证。*
+
+```bash
 docker run -d \
+  --name accountbooks-distroless \
   -p 8000:8000 \
   -v $(pwd)/db.sqlite3:/app/db.sqlite3 \
   -e USERNAME=admin \
   -e PASSWORD=yourpassword \
-  --name accountbooks \
-  accountbooks:latest
+  accountbooks:latest-distroless
 ```
 
 ---
@@ -164,8 +175,10 @@ AccountBooks/
 ├── templates/
 │   └── base.html          # 基础模板（含多主题系统、侧边栏）
 ├── docker/
-│   ├── Dockerfile         # 多阶段构建 Docker 镜像
-│   └── docker-entrypoint.sh
+│   ├── Dockerfile             # 标准版 Alpine 镜像配置
+│   ├── Dockerfile.distroless  # 安全版 Distroless 镜像配置
+│   ├── docker-entrypoint.sh   # 标准版 Shell 启动引导
+│   └── launcher_distroless.py # 安全版（无Shell环境）Python 高级启动器
 ├── scripts/
 │   ├── populate_data.py   # 示例数据生成脚本
 │   ├── format_code.sh     # 代码一键格式化工具 (Ruff + djLint)
