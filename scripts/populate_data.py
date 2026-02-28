@@ -10,10 +10,20 @@ from django.utils import timezone
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "AccountBooks.settings")
 django.setup()
 
-from accounts.models import AccountBooks, AccountInfo, GoodsInfo, Order, OrderItem
-
 
 def create_sample_data():
+    """清理旧数据并生成示例数据，包括商品、客户和订单.
+
+    该函数执行以下操作：
+    1. 删除现有的 OrderItem, Order, AccountBooks, GoodsInfo 和 AccountInfo 数据。
+    2. 创建预定义的商品列表。
+    3. 创建示例客户信息。
+    4. 随机生成最近 30 天内的订单，并关联商品和计算金额。
+    5. 更新客户的账本摘要。
+    """
+    # 在函数内部导入，以满足 PEP 8 规范并确保 django.setup() 先执行
+    from accounts.models import AccountBooks, AccountInfo, GoodsInfo, Order, OrderItem
+
     print("🧹 Cleaning old data...")
     OrderItem.objects.all().delete()
     Order.objects.all().delete()

@@ -2,7 +2,7 @@
 #    uv pip compile pyproject.toml -o requirements.txt
 asgiref==3.11.1
     # via django
-django==6.0.2
+django==5.2.11
     # via
     #   accountbooks (pyproject.toml)
     #   django-jazzmin

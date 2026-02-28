@@ -24,7 +24,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "Django>=3.2.13",
+    "Django>=5.2.11,<6.0",
     "django-jazzmin>=2.6.0",
     "gunicorn>=25.1.0",
     "whitenoise>=6.6.0",

@@ -18,6 +18,16 @@ jobs:
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: alpine
+            file: ./docker/Dockerfile
+            suffix: ""
+          - variant: distroless
+            file: ./docker/Dockerfile.distroless
+            suffix: "-distroless"
 
     steps:
       - name: Checkout repository
@@ -52,13 +62,15 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ steps.repo_name.outputs.image_name }}
+          # latest=auto 确保只有在主分支上才生成 latest 标签
+          flavor: |
+            suffix=${{ matrix.suffix }},latest=auto
           tags: |
             type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=ref,event=branch
             type=sha,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
 
       # 构建并推送多架构镜像
       - name: Build and push Docker image
@@ -66,11 +78,12 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./docker/Dockerfile
+          file: ${{ matrix.file }}
           # 同时构建 AMD64 和 ARM64
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # 使用不同的 cache scope 以防止环境间的缓存冲突
+          cache-from: type=gha,scope=${{ matrix.variant }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}

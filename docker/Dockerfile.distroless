@@ -1,0 +1,46 @@
+# ===========================================================================
+# STAGE 1: 构建阶段
+# ===========================================================================
+FROM python:3.11-slim-bookworm AS builder
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+# 1. 安装依赖
+COPY requirements.txt .
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+# 2. 复制项目代码
+COPY . .
+
+# 3. 在构建阶段预收集静态文件 (Distroless 镜像里没有 shell，无法以后再跑)
+ENV PYTHONPATH=/install/lib/python3.11/site-packages
+RUN python manage.py collectstatic --noinput
+
+
+# ===========================================================================
+# STAGE 2: 运行阶段
+# ===========================================================================
+FROM gcr.io/distroless/python3-debian12
+
+WORKDIR /app
+
+# 从 builder 拷贝所有的 Python 库并放置在标准的 /usr/local
+COPY --from=builder /install /usr/local
+# 拷贝所有项目代码和静态资源
+COPY --from=builder /app /app
+
+# 生产环境环境变量配置
+ENV PYTHONPATH=/app:/usr/local/lib/python3.11/site-packages \
+    DJANGO_SETTINGS_MODULE=AccountBooks.settings \
+    PYTHONUNBUFFERED=1 \
+    DJANGO_DEBUG=False
+
+# 暴露端口
+EXPOSE 8000
+
+# 🌟 核心：Distroless 没有任何 shell (sh/bash)
+# 直接用 python3 启动 launcher_distroless.py，完成数据库迁移并调起 Gunicorn
+ENTRYPOINT ["/usr/bin/python3", "/app/docker/launcher_distroless.py"]
