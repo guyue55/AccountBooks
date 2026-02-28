@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # 监控并在有新版本/安全漏洞时自动提 PR 升级 GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "actions"
+
+  # 监控并在有新版本/安全漏洞时自动提 PR 升级 pip (uv 依赖)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "python"

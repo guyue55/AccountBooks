@@ -1,0 +1,25 @@
+name: Feature Request (功能需求)
+description: 如果你对 AccountBooks 有好的意见或希望增加的新功能
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎提出您的奇思妙想！我们非常期待让应用变得越来越好。
+  - type: textarea
+    id: feature_description
+    attributes:
+      label: 需求描述
+      description: 请详细描述你希望 AccountBooks 增加什么功能？
+      placeholder: 例如：我希望在 Dashboard 增加一个导出当前月度报表为 PDF 的按钮。
+    validations:
+      required: true
+  - type: textarea
+    id: rationale
+    attributes:
+      label: 为什么需要这个功能？ (应用场景)
+      description: 它解决了你或者其他用户的什么痛点？
+      placeholder: 现有的情况是……每次月结财务时手动截图很不方便……
+    validations:
+      required: true

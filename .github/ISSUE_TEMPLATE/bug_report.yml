@@ -1,0 +1,49 @@
+name: Bug Report (缺陷报告)
+description: 当你在使用 AccountBooks 或部署镜像时遇到问题
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您提出问题！请尽可能提供详细的信息，帮助我们快速定位和解决它。
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 你是如何运行应用的 (部署环境)？
+      description: 请选择你当前遇到的问题的环境。
+      options:
+        - Docker 镜像 (Alpine 版)
+        - Docker 镜像 (Distroless 版)
+        - 宿主机本地直接运行 (uv run / python manage.py)
+        - 其他环境
+    validations:
+      required: true
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: 问题描述
+      description: 请清晰、简明地描述发生了什么错误。
+      placeholder: 例如：当我点击首页的“XX”按钮时，页面报错了 500。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤
+      description: 请给出能够重现这个问题的步骤。
+      placeholder: |-
+        1. 运行 `docker run ...`
+        2. 登录 admin
+        3. 点击 '增加记录'
+        4. 看到错误...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 报错截图或日志代码
+      description: 请提供终端里的报错日志（Docker logs 或 Django stack trace），如果界面有问题请附上截图。不支持的视频可以转换为 GIF。
+      render: shell
+    validations:
+      required: false

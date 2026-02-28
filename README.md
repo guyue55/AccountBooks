@@ -7,10 +7,10 @@
 <p align="center">
   <img alt="Python" src="https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white">
   <img alt="Django" src="https://img.shields.io/badge/Django-5.x-092E20?style=flat-square&logo=django&logoColor=white">
-  <img alt="Gunicorn" src="https://img.shields.io/badge/Gunicorn-WSGI-499848?style=flat-square&logo=gunicorn&logoColor=white">
-  <img alt="uv" src="https://img.shields.io/badge/uv-managed-7C3AED?style=flat-square">
-  <img alt="Docker" src="https://img.shields.io/badge/Docker-ready-2496ED?style=flat-square&logo=docker&logoColor=white">
-  <img alt="License" src="https://img.shields.io/badge/License-MIT-22C55E?style=flat-square">
+  <img alt="GitHub Workflow Status" src="https://img.shields.io/github/actions/workflow/status/guyue55/AccountBooks/docker-publish.yml?style=flat-square&label=CI%2FCD">
+  <img alt="Docker Image Size (latest)" src="https://img.shields.io/docker/image-size/guyue55/accountbooks/latest?style=flat-square&label=Alpine%20Size">
+  <img alt="Docker Image Size (distroless)" src="https://img.shields.io/docker/image-size/guyue55/accountbooks/latest-distroless?style=flat-square&label=Distroless%20Size">
+  <img alt="License" src="https://img.shields.io/github/license/guyue55/AccountBooks?style=flat-square">
 </p>
 
 > 一款面向小型团队与个人的**债务与账务管理系统**，界面现代、操作直观，帮助您清晰记录每一笔应收款项与回款情况。
