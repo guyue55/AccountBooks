@@ -10,7 +10,7 @@ django-jazzmin==3.0.2
     # via accountbooks (pyproject.toml)
 gunicorn==25.1.0
     # via accountbooks (pyproject.toml)
-packaging==26.0
+packaging==26.2
     # via gunicorn
 sqlparse==0.5.5
     # via django
