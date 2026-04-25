@@ -59,7 +59,7 @@ jobs:
       # 提取元数据（标签、版本等）
       - name: Extract Docker metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.REGISTRY }}/${{ steps.repo_name.outputs.image_name }}
           # ⚠️ 禁用内置 latest 行为：因为内置的 latest=auto 会强行忽略 suffix 后缀！
