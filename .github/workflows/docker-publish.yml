@@ -39,7 +39,7 @@ jobs:
 
       # 设置 Docker Buildx
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # 登录到 GitHub 镜像仓库
       - name: Log into registry ${{ env.REGISTRY }}
