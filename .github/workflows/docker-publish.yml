@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # 设置 QEMU (用于跨架构构建，如 arm64)
       - name: Set up QEMU
